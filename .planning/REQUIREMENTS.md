@@ -44,10 +44,10 @@
 
 ### Data Management (DAT)
 
-- [ ] **DAT-01**: Supabase tables: students, faculty, subjects, enrollments, departments
-- [ ] **DAT-02**: RLS policies: student sees own enrollments, faculty sees assigned courses, admin sees all
+- [x] **DAT-01**: Supabase tables: students, faculty, subjects, enrollments, departments
+- [x] **DAT-02**: RLS policies: student sees own enrollments, faculty sees assigned courses, admin sees all
 - [ ] **DAT-03**: Excel/CSV import maps columns to database schema
-- [ ] **DAT-04**: Academic year field to support yearly data separation
+- [x] **DAT-04**: Academic year field to support yearly data separation
 
 ## v2 Requirements
 
@@ -110,17 +110,18 @@
 | ADM-05 | Phase 4 | Pending |
 | ADM-06 | Phase 4 | Pending |
 | ADM-07 | Phase 4 | Pending |
-| DAT-01 | Phase 1 | Pending |
-| DAT-02 | Phase 1 | Pending |
+| DAT-01 | Phase 1 | ✅ Done |
+| DAT-02 | Phase 1 | ✅ Done |
 | DAT-03 | Phase 4 | Pending |
-| DAT-04 | Phase 1 | Pending |
+| DAT-04 | Phase 1 | ✅ Done |
 
 **Coverage:**
 - v1 requirements: 30 total
 - Mapped to phases: 30
 - Unmapped: 0 ✓
+- **Completed: 3/30 (10%)**
 
 ---
 
 *Requirements defined: 2026-08-07*
-*Last updated: 2026-08-07 after roadmap creation*
+*Last updated: 2026-08-07 after Plan 01-01 completion (DAT-01, DAT-02, DAT-04 done)*

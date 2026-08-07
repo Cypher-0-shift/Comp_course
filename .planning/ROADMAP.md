@@ -8,6 +8,9 @@
 ## Phases
 
 - [ ] **Phase 1: Foundation & Authentication** - Project setup, Supabase configuration, auth with roles, database schema, and RLS policies
+  - [x] **Plan 01-01:** Project Scaffold + Supabase Schema (schema, seed, project setup)
+  - [ ] **Plan 01-02:** Supabase Client & Auth Provider (typed client, AuthProvider, useAuth)
+  - [ ] **Plan 01-03:** Login Flow & Role-Based Routing (login, protected routes, role redirects)
 - [ ] **Phase 2: Student Portal** - Student dashboard with profile, enrolled courses, and faculty contacts
 - [ ] **Phase 3: Faculty Portal** - Faculty dashboard with 3 tabs (Student/Faculty/Department lists), filtering, search, pagination, and student detail view
 - [ ] **Phase 4: Admin Portal & Data Import** - Admin dashboard with department overview, drill-down tabs, and Excel/CSV upload with validation
@@ -73,7 +76,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Authentication | 0/3 | Not started | - |
+| 1. Foundation & Authentication | 1/3 | In Progress | 2026-08-07 |
 | 2. Student Portal | 0/2 | Not started | - |
 | 3. Faculty Portal | 0/3 | Not started | - |
 | 4. Admin Portal & Data Import | 0/3 | Not started | - |
