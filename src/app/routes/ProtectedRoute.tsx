@@ -1,0 +1,52 @@
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../../shared/hooks/useAuth'
+import { UserRole } from '../../shared/types'
+
+interface ProtectedRouteProps {
+  children: React.ReactNode
+  allowedRoles: UserRole[]
+}
+
+export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  const { role, isLoading } = useAuth()
+  const location = useLocation()
+
+  // Show loading spinner while auth state is being determined
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  // No session - redirect to login with current path as redirect param
+  if (!role) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  // Check if user's role is allowed
+  const isAllowed = allowedRoles.includes(role)
+
+  if (!isAllowed) {
+    // Deep link redirect: if user tries to access wrong dashboard, redirect to their correct one
+    const currentPath = location.pathname
+    const targetDashboard =
+      role === 'student' ? '/student' : role === 'faculty' ? '/faculty' : '/admin'
+
+    if (currentPath.startsWith('/student') || currentPath.startsWith('/faculty') || currentPath.startsWith('/admin')) {
+      return (
+        <Navigate
+          to={targetDashboard}
+          state={{ redirected: true, fromRole: role }}
+          replace
+        />
+      )
+    }
+
+    // Otherwise show access denied page
+    return <Navigate to="/access-denied" state={{ from: location }} replace />
+  }
+
+  return <>{children}</>
+}

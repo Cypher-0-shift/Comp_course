@@ -1,13 +1,62 @@
-// Placeholder - Router will be implemented in Plan 01-03
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { ProtectedRoute } from './ProtectedRoute'
+import { AccessDenied } from './AccessDenied'
+import { LoginForm } from '@/features/auth/LoginForm'
+
+// Placeholder layouts for each role - to be implemented in later phases
+function StudentLayout() {
+  return <div className="p-6">Student Dashboard (Phase 2)</div>
+}
+
+function FacultyLayout() {
+  return <div className="p-6">Faculty Dashboard (Phase 3)</div>
+}
+
+function AdminLayout() {
+  return <div className="p-6">Admin Dashboard (Phase 4)</div>
+}
+
+function LoginPage() {
+  return <LoginForm />
+}
 
 export const router = (
   <Routes>
-    <Route path="/login" element={<div>Login Page (Plan 01-03)</div>} />
-    <Route path="/student/*" element={<div>Student Dashboard (Plan 02)</div>} />
-    <Route path="/faculty/*" element={<div>Faculty Dashboard (Plan 03)</div>} />
-    <Route path="/admin/*" element={<div>Admin Dashboard (Plan 04)</div>} />
-    <Route path="/access-denied" element={<div>Access Denied</div>} />
+    {/* Public routes */}
+    <Route path="/login" element={<LoginPage />} />
+    <Route path="/access-denied" element={<AccessDenied />} />
+
+    {/* Protected routes - Student */}
+    <Route
+      path="/student/*"
+      element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentLayout />
+        </ProtectedRoute>
+      }
+    />
+
+    {/* Protected routes - Faculty */}
+    <Route
+      path="/faculty/*"
+      element={
+        <ProtectedRoute allowedRoles={['faculty']}>
+          <FacultyLayout />
+        </ProtectedRoute>
+      }
+    />
+
+    {/* Protected routes - Admin (HOD + Dean) */}
+    <Route
+      path="/admin/*"
+      element={
+        <ProtectedRoute allowedRoles={['hod', 'dean']}>
+          <AdminLayout />
+        </ProtectedRoute>
+      }
+    />
+
+    {/* Catch-all - redirect to login */}
     <Route path="*" element={<Navigate to="/login" replace />} />
   </Routes>
 )

@@ -1,0 +1,72 @@
+
+  Project: Compensatory Course Dashboard
+  Stack: React + Vite + TypeScript + shadcn/ui + Tailwind → Supabase (PostgreSQL + Auth + RLS)
+  Repo: C:\Users\ASUS (git initialized)
+
+  ---
+  Completed
+
+  ┌────────────────────────────────────────────────────────────────────────┬───────────────────────┐
+  │                                Artifact                                │        Status         │
+  ├────────────────────────────────────────────────────────────────────────┼───────────────────────┤
+  │ PROJECT.md, REQUIREMENTS.md (30 reqs), ROADMAP.md (4 phases), STATE.md │ ✅ Committed          │
+  ├────────────────────────────────────────────────────────────────────────┼───────────────────────┤
+  │ Phase 1 CONTEXT.md (8 design decisions)                                │ ✅ Written            │
+  ├────────────────────────────────────────────────────────────────────────┼───────────────────────┤
+  │ Phase 1 Plans (3 plans across 3 waves)                                 │ ✅ Written & verified │
+  └────────────────────────────────────────────────────────────────────────┴───────────────────────┘
+
+  4-Phase Roadmap
+
+  1. Foundation & Auth — Scaffold, Supabase schema/RLS, auth infra, login, routing
+  2. Student Portal — Profile, enrolled courses, faculty contacts
+  3. Faculty Portal — 3-tab dashboard (Student/Faculty/Dept lists), filter/search/pagination, student detail
+  4. Admin Portal & Data Import — Dept overview, drill-down tabs, Excel upload
+
+  ---
+  Phase 1 Execution Status
+
+  ┌──────┬────────────────────┬────────────────┬───────────────────────────────────────────────────────────────────┐
+  │ Wave │        Plan        │     Tasks      │                              Status                               │
+  ├──────┼────────────────────┼────────────────┼───────────────────────────────────────────────────────────────────┤
+  │ 1    │ 01-01: Scaffold +  │ 3 auto         │ ✅ DONE — Project runs, 7 tables + 15 RLS policies, seed data     │
+  │      │ Schema             │                │ (HOD/Dean)                                                        │
+  ├──────┼────────────────────┼────────────────┼───────────────────────────────────────────────────────────────────┤
+  │      │ 01-02: Client +    │                │ ✅ DONE — useSupabase, AuthProvider (30-min idle, max 3           │
+  │ 2    │ AuthProvider       │ 2 auto         │ sessions), useAuth with redirectToDashboard(); typecheck ✅,      │
+  │      │                    │                │ build ✅                                                          │
+  ├──────┼────────────────────┼────────────────┼───────────────────────────────────────────────────────────────────┤
+  │ 3    │ 01-03: Login +     │ 2 auto + 1     │ ⏳ NEXT — LoginForm, ProtectedRoute, router, AccessDenied,        │
+  │      │ Routing            │ checkpoint     │ RootLayout, human verify                                          │
+  └──────┴────────────────────┴────────────────┴───────────────────────────────────────────────────────────────────┘
+
+  ---
+  Key Decisions (from CONTEXT.md)
+
+  - Admin creation: SQL seed script, roles in app_metadata (hod/dean with department_id)
+  - Folder structure: Feature-based (features/auth, student-portal, faculty-dashboard, admin-portal)
+  - Supabase: Email confirm required, app_metadata for roles, PKCE, defaults for JWT/session
+  - Academic year: Separate academic_years table + FK on all relevant tables
+  - RLS: faculty_subjects junction table; student=own, faculty=assigned courses, HOD=dept, Dean=all
+  - Session: 30-min idle timeout, max 3 concurrent sessions, cross-tab sync, useAuth() hook
+  - Errors: Auth error boundary, Sonner toasts, TanStack Query, 401→login, 403→access-denied
+  - Routing: React Router v6, ProtectedRole wrapper, role hierarchy (Dean≥HOD>Faculty>Student)
+
+  ---
+  Immediate Next Step
+
+  /gsd:execute-phase 01-foundation-auth
+  Will execute Plan 01-03 (Wave 3): LoginForm, ProtectedRoute, router config, AccessDenied page, RootLayout wiring, then
+   human verification of full auth flow with seeded HOD/Dean users.
+
+  ---
+  Git Note
+
+  Phase 01-02 changes staged but commit blocked by stale .git/index.lock — remove manually on resume:
+  rm -f .git/index.lock && git add -A && git commit -m "feat(01-02): ..."
+
+  ---
+  Resume Command
+
+  /gsd:resume-work
+  Or continue manually from /gsd:execute-phase 01-foundation-auth
