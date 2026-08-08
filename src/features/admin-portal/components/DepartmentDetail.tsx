@@ -50,23 +50,23 @@ export function DepartmentDetail() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header Bar with Back Navigation & Subject Dropdown */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl backdrop-blur">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-3">
           <button
             id="admin-dept-back-btn"
             onClick={() => navigate('/admin')}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-950/80 text-slate-400 transition hover:border-violet-500/40 hover:text-violet-300"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-100/80 text-slate-600 transition hover:bg-white hover:border-slate-300 hover:text-slate-900 cursor-pointer"
             title="Back to Overview"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600/20 text-violet-400 ring-1 ring-violet-500/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 border border-violet-200/60">
               <Building2 className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base font-bold text-slate-100">{deptTitle}</h1>
-              <p className="text-xs text-slate-400">
+              <h1 className="text-base font-bold text-slate-900">{deptTitle}</h1>
+              <p className="text-xs text-slate-500">
                 Department Overview • {deptMeta?.department_code || 'DEPT'}
               </p>
             </div>
@@ -74,20 +74,20 @@ export function DepartmentDetail() {
         </div>
 
         {/* Subject Selection Dropdown Menu */}
-        <div className="flex items-center gap-2.5 rounded-xl border border-slate-800 bg-slate-950/90 px-3.5 py-2 text-xs">
-          <BookOpen className="h-4 w-4 text-violet-400 shrink-0" />
-          <label htmlFor="dept-subject-dropdown" className="font-medium text-slate-400">Select Subject:</label>
+        <div className="flex items-center gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50 px-3.5 py-2 text-xs">
+          <BookOpen className="h-4 w-4 text-violet-600 shrink-0" />
+          <label htmlFor="dept-subject-dropdown" className="font-medium text-slate-500">Select Subject:</label>
           <select
             id="dept-subject-dropdown"
             value={selectedSubjectCode}
             onChange={(e) => setSelectedSubjectCode(e.target.value)}
-            className="bg-transparent font-semibold text-slate-100 focus:outline-none cursor-pointer max-w-[260px] truncate"
+            className="bg-transparent font-semibold text-slate-900 focus:outline-none cursor-pointer max-w-[260px] truncate"
           >
-            <option value="all" className="bg-slate-950 text-slate-100">
+            <option value="all" className="bg-white text-slate-900">
               All Subjects ({uniqueSubjects.length})
             </option>
             {uniqueSubjects.map((s) => (
-              <option key={s.code} value={s.code} className="bg-slate-950 text-slate-100">
+              <option key={s.code} value={s.code} className="bg-white text-slate-900">
                 {s.code} – {s.name}
               </option>
             ))}
@@ -97,15 +97,15 @@ export function DepartmentDetail() {
 
       {/* Tabs Container - Default Tab 1: Student List, Tab 2: Faculty List */}
       <Tabs.Root defaultValue="students">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-          <Tabs.List className="flex gap-1.5 rounded-xl border border-slate-800 bg-slate-950/80 p-1">
+        <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 mb-4">
+          <Tabs.List className="flex gap-1.5 rounded-xl border border-slate-200/80 bg-slate-100/80 p-1">
             <Tabs.Trigger
               value="students"
               id="dept-tab-students"
               className={cn(
                 'flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all select-none',
-                'text-slate-400 hover:text-slate-200',
-                'data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg shadow-violet-950/50'
+                'text-slate-600 hover:text-slate-900',
+                'data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-md shadow-violet-950/20'
               )}
             >
               <Users className="h-3.5 w-3.5" />
@@ -117,8 +117,8 @@ export function DepartmentDetail() {
               id="dept-tab-faculty"
               className={cn(
                 'flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all select-none',
-                'text-slate-400 hover:text-slate-200',
-                'data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg shadow-violet-950/50'
+                'text-slate-600 hover:text-slate-900',
+                'data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-md shadow-violet-950/20'
               )}
             >
               <GraduationCap className="h-3.5 w-3.5" />

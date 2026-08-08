@@ -239,9 +239,9 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
             </div>
           ) : (
             /* Dense Table Layout */
-            <div className="overflow-x-auto rounded-xl border border-slate-200/80">
-              <table className="w-full text-sm text-left text-slate-600">
-                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200 font-semibold tracking-wider">
+            <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 shadow-xl">
+              <table className="w-full text-sm text-left text-slate-200">
+                <thead className="text-xs text-indigo-300 uppercase bg-slate-950/90 border-b border-slate-800 font-bold tracking-wider">
                   <tr>
                     <th scope="col" className="px-5 py-3.5">Code</th>
                     <th scope="col" className="px-5 py-3.5">Subject Name</th>
@@ -251,7 +251,7 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
                     <th scope="col" className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-800/60">
                   {filteredEnrollments.map((enrollment) => {
                     const facultySubject = enrollment.subject?.faculty_subjects?.[0]
                     const faculty = facultySubject?.faculty
@@ -259,12 +259,12 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
                     return (
                       <tr 
                         key={enrollment.id} 
-                        className="bg-white hover:bg-slate-50/80 transition-colors"
+                        className="hover:bg-indigo-900/30 transition-colors"
                       >
-                        <td className="px-5 py-4 font-mono font-bold text-indigo-700">
+                        <td className="px-5 py-4 font-mono font-bold text-indigo-300">
                           {enrollment.subject?.code || 'N/A'}
                         </td>
-                        <td className="px-5 py-4 font-medium text-slate-900">
+                        <td className="px-5 py-4 font-medium text-slate-100">
                           {enrollment.subject?.name || 'N/A'}
                         </td>
                         <td className="px-5 py-4">
@@ -272,19 +272,19 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
                             variant={enrollment.status === 'completed' ? 'default' : 'secondary'}
                             className={`capitalize text-xs font-semibold px-2.5 py-0.5 rounded-full ${
                               enrollment.status === 'completed'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                             }`}
                           >
                             {enrollment.status}
                           </Badge>
                         </td>
-                        <td className="px-5 py-4 font-medium text-slate-800">
-                          {faculty?.name || <span className="text-slate-400 italic">Not Assigned</span>}
+                        <td className="px-5 py-4 font-medium text-slate-200">
+                          {faculty?.name || <span className="text-slate-500 italic">Not Assigned</span>}
                         </td>
                         <td className="px-5 py-4">
                           {faculty ? (
-                            <div className="flex flex-col text-xs space-y-1 text-slate-600">
+                            <div className="flex flex-col text-xs space-y-1 text-slate-300">
                               <span className="flex items-center gap-1.5">
                                 <Mail className="w-3 h-3 text-slate-400" />
                                 {faculty.email}
@@ -297,7 +297,7 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
                               )}
                             </div>
                           ) : (
-                            <span className="text-slate-400 italic text-xs">N/A</span>
+                            <span className="text-slate-500 italic text-xs">N/A</span>
                           )}
                         </td>
                         <td className="px-5 py-4 text-right">

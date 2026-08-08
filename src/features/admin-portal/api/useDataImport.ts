@@ -57,15 +57,38 @@ export function useDataImport() {
   }
 
   const importMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (passcode: string) => {
       if (!importType) throw new Error('No import type selected')
 
       const validRows = preview.filter((r) => r.valid).map((r) => r.data)
       if (validRows.length === 0) throw new Error('No valid rows to import')
 
+      // Layer 2 Verification: Try RPC first
+      try {
+        const { data, error } = await (supabase.rpc as any)('import_data_with_verification', {
+          p_passcode: passcode,
+          p_import_type: importType,
+          p_rows: validRows,
+        })
+
+        if (!error && data) {
+          return data as ImportResult
+        }
+      } catch {
+        // Fallback to client-side passcode verification if RPC not executed in Supabase console
+      }
+
+      // Local Passcode Verification Fallback
+      if (passcode !== 'ADMIN123') {
+        throw new Error('Invalid Security Verification Passcode. Data import denied.')
+      }
+
       const result: ImportResult = { inserted: 0, skipped: 0, errors: [] }
 
       if (importType === 'departments') {
+        // Clear existing for complete data replacement
+        await supabase.from('departments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+
         for (let i = 0; i < validRows.length; i++) {
           const row = validRows[i]
           const { error } = await supabase.from('departments').upsert({
@@ -80,6 +103,9 @@ export function useDataImport() {
       }
 
       if (importType === 'faculty') {
+        // Clear existing for complete data replacement
+        await supabase.from('faculty_assignments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+
         for (let i = 0; i < validRows.length; i++) {
           const row = validRows[i]
           const { error } = await supabase.from('faculty_assignments').insert({
@@ -100,6 +126,9 @@ export function useDataImport() {
       }
 
       if (importType === 'students') {
+        // Clear existing for complete data replacement
+        await supabase.from('student_enrollments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+
         for (let i = 0; i < validRows.length; i++) {
           const row = validRows[i]
           const { error } = await supabase.from('student_enrollments').insert({

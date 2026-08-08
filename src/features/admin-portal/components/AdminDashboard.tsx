@@ -15,7 +15,13 @@ export function AdminDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
-    <div className="flex min-h-screen flex-col bg-[radial-gradient(ellipse_at_top,_theme(colors.slate.900)_0%,_theme(colors.slate.950)_70%)] text-slate-100 selection:bg-violet-500 selection:text-white">
+    <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-violet-500 selection:text-white font-sans relative">
+      {/* Background Ambient Glows */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
+      </div>
+
       {/* Top Header Bar */}
       <AdminHeader
         sidebarOpen={!sidebarCollapsed}
@@ -23,7 +29,7 @@ export function AdminDashboard() {
       />
 
       {/* Main Shell Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative z-10">
         {/* Left Collapsible Sidebar Navigation */}
         <AdminSidebar
           collapsed={sidebarCollapsed}
@@ -38,8 +44,8 @@ export function AdminDashboard() {
                 <section>
                   <div className="mb-5 flex items-center justify-between">
                     <div>
-                      <h1 className="text-lg font-bold text-slate-100">Institutional Overview</h1>
-                      <p className="text-xs text-slate-400">
+                      <h1 className="text-lg font-bold text-slate-900">Institutional Overview</h1>
+                      <p className="text-xs text-slate-500">
                         {role === 'hod' ? 'Departmental analytics and enrolled student list' : 'All university departments — full executive visibility'}
                       </p>
                     </div>
@@ -48,10 +54,10 @@ export function AdminDashboard() {
                 </section>
               } />
               <Route path="students" element={
-                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl backdrop-blur">
-                  <div className="mb-5 border-b border-slate-800 pb-4">
-                    <h1 className="text-lg font-bold text-slate-100">Student Directory</h1>
-                    <p className="text-xs text-slate-400">
+                <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+                  <div className="mb-5 border-b border-slate-100 pb-4">
+                    <h1 className="text-lg font-bold text-slate-900">Student Directory</h1>
+                    <p className="text-xs text-slate-500">
                       {role === 'hod' ? 'Enrolled students in your department' : 'Enrolled students across departments'}
                     </p>
                   </div>

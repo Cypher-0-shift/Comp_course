@@ -14,7 +14,13 @@ export function FacultyDashboard() {
   const [activeSidebarTab, setActiveSidebarTab] = useState<FacultyTabType>('dashboard')
 
   return (
-    <div className="flex min-h-screen flex-col bg-[radial-gradient(ellipse_at_top,_theme(colors.slate.900)_0%,_theme(colors.slate.950)_70%)] text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-indigo-500 selection:text-white font-sans relative">
+      {/* Background Ambient Glows */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
+      </div>
+
       {/* Top Header Bar */}
       <FacultyHeader
         sidebarOpen={!sidebarCollapsed}
@@ -22,7 +28,7 @@ export function FacultyDashboard() {
       />
 
       {/* Main Shell Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative z-10">
         {/* Left Collapsible Sidebar Navigation */}
         <FacultySidebar
           activeTab={activeSidebarTab}
@@ -40,15 +46,15 @@ export function FacultyDashboard() {
                 <AnalyticsChartsSection />
 
                 {/* Main Student Directory Area */}
-                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-xl backdrop-blur">
-                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-3 mb-5">
+                <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400 ring-1 ring-indigo-500/30">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/60">
                         <Users className="h-5 w-5" />
                       </div>
                       <div>
-                        <h2 className="text-base font-bold text-slate-100">Faculty Student Directory</h2>
-                        <p className="text-xs text-slate-400">Filter enrolled students by assigned course & subject</p>
+                        <h2 className="text-base font-bold text-slate-900">Faculty Student Directory</h2>
+                        <p className="text-xs text-slate-500">Filter enrolled students by assigned course & subject</p>
                       </div>
                     </div>
                   </div>
@@ -60,14 +66,14 @@ export function FacultyDashboard() {
             ) : activeSidebarTab === 'faculty' ? (
               /* Sidebar Selection: Faculty Directory Tab */
               <div className="space-y-6">
-                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl backdrop-blur">
-                  <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-6">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400 ring-1 ring-indigo-500/30">
+                <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+                  <div className="flex items-center gap-3 border-b border-slate-100 pb-4 mb-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/60">
                       <GraduationCap className="h-5 w-5" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-slate-100">Faculty Assignment Directory</h2>
-                      <p className="text-xs text-slate-400">Complete list of department faculty members and assigned subjects</p>
+                      <h2 className="text-lg font-bold text-slate-900">Faculty Assignment Directory</h2>
+                      <p className="text-xs text-slate-500">Complete list of department faculty members and assigned subjects</p>
                     </div>
                   </div>
 
@@ -77,14 +83,14 @@ export function FacultyDashboard() {
             ) : (
               /* Sidebar Selection: Department Tab */
               <div className="space-y-6">
-                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl backdrop-blur">
-                  <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-6">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400 ring-1 ring-indigo-500/30">
+                <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+                  <div className="flex items-center gap-3 border-b border-slate-100 pb-4 mb-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/60">
                       <Building2 className="h-5 w-5" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-slate-100">Department Academic Overview</h2>
-                      <p className="text-xs text-slate-400">Department-wise enrollment metrics and subject allocation</p>
+                      <h2 className="text-lg font-bold text-slate-900">Department Academic Overview</h2>
+                      <p className="text-xs text-slate-500">Department-wise enrollment metrics and subject allocation</p>
                     </div>
                   </div>
 

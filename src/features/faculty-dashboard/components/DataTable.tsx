@@ -110,10 +110,10 @@ export function DataTable<T extends object>({
     <div className="flex flex-col gap-3">
       <div
         ref={containerRef}
-        className="w-full overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur min-h-[480px] max-h-[75vh] overflow-y-auto"
+        className="w-full overflow-x-auto rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 shadow-xl backdrop-blur min-h-[480px] max-h-[75vh] overflow-y-auto"
       >
         <table className="w-full text-sm text-left">
-          <thead className="sticky top-0 z-10 bg-slate-950/95 backdrop-blur border-b border-slate-800">
+          <thead className="sticky top-0 z-10 bg-slate-950/90 backdrop-blur border-b border-slate-800">
             <tr>
               {renderExpandedRow && (
                 <th className="w-10 px-3 py-3.5 text-center text-slate-500 font-semibold select-none">
@@ -124,8 +124,8 @@ export function DataTable<T extends object>({
                 <th
                   key={col.key}
                   className={cn(
-                    'px-4 py-3.5 font-bold uppercase tracking-wider text-[11px] text-slate-400 select-none whitespace-nowrap',
-                    col.sortable && onSort && 'cursor-pointer hover:text-slate-100 transition-colors',
+                    'px-4 py-3.5 font-bold uppercase tracking-wider text-[11px] text-indigo-300 select-none whitespace-nowrap',
+                    col.sortable && onSort && 'cursor-pointer hover:text-white transition-colors',
                     col.className
                   )}
                   onClick={() => col.sortable && onSort?.(col.key)}
@@ -133,12 +133,12 @@ export function DataTable<T extends object>({
                   <span className="inline-flex items-center gap-1.5">
                     {col.header}
                     {col.sortable && onSort && (
-                      <span className="text-slate-500">
+                      <span className="text-indigo-400">
                         {sortKey === col.key ? (
                           sortDir === 'asc' ? (
-                            <ChevronUp className="h-3.5 w-3.5 text-indigo-400" />
+                            <ChevronUp className="h-3.5 w-3.5 text-indigo-300" />
                           ) : (
-                            <ChevronDown className="h-3.5 w-3.5 text-indigo-400" />
+                            <ChevronDown className="h-3.5 w-3.5 text-indigo-300" />
                           )
                         ) : (
                           <ChevronsUpDown className="h-3.5 w-3.5" />
@@ -150,7 +150,7 @@ export function DataTable<T extends object>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/50">
+          <tbody className="divide-y divide-slate-800/60">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <SkeletonRow key={i} cols={totalCols} />
