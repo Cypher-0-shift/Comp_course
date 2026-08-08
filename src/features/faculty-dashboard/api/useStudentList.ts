@@ -20,13 +20,16 @@ interface UseStudentListParams {
   filters: FilterOptions
   search: string
   pagination?: Pick<PaginationState, 'page' | 'pageSize'>
+  departmentName?: string | null
 }
 
-export function useStudentList({ filters, search }: UseStudentListParams) {
+export function useStudentList({ filters, search, departmentName }: UseStudentListParams) {
   const supabase = useSupabase()
 
   return useQuery({
-    queryKey: ['faculty-student-list', filters, search],
+    queryKey: ['faculty-student-list', filters, search, departmentName],
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     queryFn: async () => {
       let query = supabase
         .from('student_enrollments')
@@ -44,8 +47,9 @@ export function useStudentList({ filters, search }: UseStudentListParams) {
         query = query.eq('program', filters.program)
       }
 
-      if (filters.department) {
-        query = query.or(`program.ilike.%${filters.department}%`)
+      const activeDept = filters.department || departmentName
+      if (activeDept) {
+        query = query.ilike('program', `%${activeDept}%`)
       }
 
       if (search.trim()) {

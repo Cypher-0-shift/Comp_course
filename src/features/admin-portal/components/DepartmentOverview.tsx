@@ -1,16 +1,18 @@
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDepartmentOverview, type DepartmentOverviewRow } from '../api/useDepartmentOverview'
+import { useFacultyList } from '@/features/faculty-dashboard/api/useFacultyList'
 import { DataTable, type ColumnDef } from '@/features/faculty-dashboard/components/DataTable'
-import { Users, ExternalLink } from 'lucide-react'
+import { Users, ExternalLink, Building2, BookOpen, TrendingUp, BarChart3, GraduationCap } from 'lucide-react'
 
 const COLUMNS: ColumnDef<DepartmentOverviewRow>[] = [
-  { key: 'sno', header: '#', className: 'w-12 text-slate-400' },
-  { key: 'department_code', header: 'Code', className: 'font-mono text-xs' },
+  { key: 'sno', header: '#', className: 'w-12 text-slate-400 font-mono text-xs' },
+  { key: 'department_code', header: 'Code', className: 'font-mono text-xs text-violet-400 font-bold' },
   {
     key: 'department_name',
     header: 'Department Name',
     render: (v) => (
-      <span className="font-medium text-slate-200">{v as string}</span>
+      <span className="font-semibold text-slate-100">{v as string}</span>
     ),
   },
   {
@@ -18,17 +20,17 @@ const COLUMNS: ColumnDef<DepartmentOverviewRow>[] = [
     header: 'Students Registered',
     render: (v) => (
       <div className="flex items-center gap-2">
-        <Users className="h-3.5 w-3.5 text-slate-500" />
-        <span className="font-semibold text-indigo-300">{v as number}</span>
+        <Users className="h-4 w-4 text-slate-400" />
+        <span className="font-bold text-violet-300">{v as number}</span>
       </div>
     ),
   },
   {
     key: 'department_id',
     header: '',
-    className: 'w-10',
+    className: 'w-10 text-right',
     render: () => (
-      <ExternalLink className="h-3.5 w-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" />
+      <ExternalLink className="h-4 w-4 text-slate-500 group-hover:text-violet-400 transition-colors" />
     ),
   },
 ]
@@ -36,43 +38,169 @@ const COLUMNS: ColumnDef<DepartmentOverviewRow>[] = [
 export function DepartmentOverview() {
   const navigate = useNavigate()
   const { data: rows = [], isLoading } = useDepartmentOverview()
+  const { data: facultyData } = useFacultyList({ filters: {}, search: '' })
 
-  const totalStudents = rows.reduce((s, r) => s + r.students_registered, 0)
+  const totalDepartments = rows.length
+  const totalFacultyCourses = facultyData?.rows.length ?? 0
+
+  const totalStudents = useMemo(() => {
+    return rows.reduce((sum, row) => sum + row.students_registered, 0)
+  }, [rows])
+
+  // Chart preparation
+  const chartItems = useMemo(() => {
+    return rows.map((d) => ({
+      name: d.department_code,
+      fullName: d.department_name,
+      count: d.students_registered,
+    }))
+  }, [rows])
+
+  const maxStudentCount = useMemo(() => {
+    if (chartItems.length === 0) return 1
+    return Math.max(...chartItems.map((i) => i.count), 1)
+  }, [chartItems])
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Summary stats */}
-      {!isLoading && (
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-            <Users className="h-5 w-5 text-indigo-400" />
-            <div>
-              <p className="text-xs text-slate-400">Total Students</p>
-              <p className="text-2xl font-bold text-slate-100">{totalStudents}</p>
-            </div>
+    <div className="space-y-6">
+      {/* Analytics & Graph Split-Screen Row */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        {/* Left Side: Key Analytics Cards */}
+        <div className="lg:col-span-5 flex flex-col justify-between gap-4">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
+              Executive Metrics
+            </h2>
+            <span className="text-xs text-slate-500 font-medium">Live Institutional Data</span>
           </div>
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/30 text-xs font-bold text-indigo-300">
-              {rows.length}
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3.5 flex-1">
+            {/* Metric 1: Total Academic Departments */}
+            <div className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 transition-all duration-200 hover:border-violet-500/40 hover:shadow-xl hover:shadow-violet-950/20">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Departments</p>
+                  <h3 className="mt-1 text-2xl font-extrabold text-slate-100 tracking-tight">{totalDepartments}</h3>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400 ring-1 ring-violet-500/20 transition-transform duration-200 group-hover:scale-110">
+                  <Building2 className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-[11px] text-violet-400 font-medium">
+                <TrendingUp className="h-3.5 w-3.5" />
+                <span>Active University Faculties</span>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-slate-400">Departments</p>
-              <p className="text-2xl font-bold text-slate-100">{rows.length}</p>
+
+            {/* Metric 2: Total Registered Students */}
+            <div className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 transition-all duration-200 hover:border-violet-500/40 hover:shadow-xl hover:shadow-violet-950/20">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Enrolled Students</p>
+                  <h3 className="mt-1 text-2xl font-extrabold text-slate-100 tracking-tight">{totalStudents}</h3>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 transition-transform duration-200 group-hover:scale-110">
+                  <Users className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-400 font-medium">
+                <span className="rounded-full bg-slate-800 px-2 py-0.5 text-slate-300">Across {totalDepartments} Depts</span>
+                <span>Compensatory Roster</span>
+              </div>
+            </div>
+
+            {/* Metric 3: Active Faculty Assignments */}
+            <div className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-4 transition-all duration-200 hover:border-violet-500/40 hover:shadow-xl hover:shadow-violet-950/20">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Faculty Course Assignments</p>
+                  <h3 className="mt-1 text-2xl font-extrabold text-violet-400 tracking-tight">{totalFacultyCourses}</h3>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600/20 text-violet-300 ring-1 ring-violet-500/30 transition-transform duration-200 group-hover:scale-110">
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2 text-[11px] text-violet-300 font-medium">
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>Assigned Subjects</span>
+              </div>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Department table */}
-      <DataTable<DepartmentOverviewRow>
-        columns={COLUMNS}
-        rows={rows}
-        isLoading={isLoading}
-        rowKey={(r) => r.department_id}
-        onRowClick={(r) => navigate(`/admin/departments/${r.department_id}`)}
-        emptyMessage="No departments found."
-      />
-      <p className="text-xs text-slate-500">Click a department row to see faculty assignments and enrolled students.</p>
+        {/* Right Side: Responsive Department Bar Chart */}
+        <div className="lg:col-span-7 flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-slate-100">Department Analytics</h3>
+              <p className="text-xs text-slate-400">Student enrollment distribution per department</p>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-1 text-xs font-semibold text-violet-400">
+              <BarChart3 className="h-4 w-4" />
+              <span>Enrollment Distribution</span>
+            </div>
+          </div>
+
+          <div className="flex-1 pt-4 pb-1 flex flex-col justify-end overflow-hidden min-h-[220px]">
+            {chartItems.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-xs text-slate-500 italic">
+                Loading department analytics chart data...
+              </div>
+            ) : (
+              <div className="flex flex-col h-full justify-between overflow-hidden">
+                <div className="flex items-end justify-around gap-2 h-36 pt-2 px-1 border-b border-slate-800 overflow-hidden">
+                  {chartItems.map((item, idx) => {
+                    const heightPercent = Math.max(12, Math.round((item.count / maxStudentCount) * 100))
+                    return (
+                      <div key={idx} className="group relative flex-1 flex flex-col items-center h-full justify-end max-w-[56px]">
+                        <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30 rounded-md bg-slate-950 border border-slate-700 px-2 py-0.5 text-[10px] text-slate-100 shadow-xl whitespace-nowrap">
+                          <span className="font-bold text-violet-400">{item.name}:</span> {item.count}
+                        </div>
+                        <div
+                          style={{ height: `${heightPercent}%` }}
+                          className="w-full rounded-t-md bg-gradient-to-t from-violet-900 via-violet-600 to-indigo-400 transition-all duration-300 group-hover:brightness-125 group-hover:shadow-md group-hover:shadow-violet-500/30"
+                        />
+                        <span className="mt-1.5 text-[10px] font-bold text-slate-400 truncate max-w-full group-hover:text-violet-300">
+                          {item.name}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1.5 px-1 font-medium">
+                  <span>0 Registered</span>
+                  <span>Peak: {maxStudentCount} Students</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Department Overview Data Directory */}
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-xl backdrop-blur">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-3 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600/20 text-violet-400 ring-1 ring-violet-500/30">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-100">Department Directory</h2>
+              <p className="text-xs text-slate-400">Click any department row below to view assigned faculty members and enrolled students</p>
+            </div>
+          </div>
+        </div>
+
+        <DataTable<DepartmentOverviewRow>
+          columns={COLUMNS}
+          rows={rows}
+          isLoading={isLoading}
+          rowKey={(r) => r.department_id}
+          onRowClick={(r) => navigate(`/admin/departments/${r.department_id}`)}
+          emptyMessage="No departments found."
+        />
+      </section>
     </div>
   )
 }

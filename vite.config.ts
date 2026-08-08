@@ -12,4 +12,10 @@ export default defineConfig({
   define: {
     'process.env': {},
   },
+  build: {
+    sourcemap: false,
+  },
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
 })

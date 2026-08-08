@@ -1,124 +1,106 @@
-import * as Tabs from '@radix-ui/react-tabs'
-import { Users, BookOpen, Building2, LogOut, GraduationCap } from 'lucide-react'
-import { useAuth } from '@/shared/hooks/useAuth'
+import { useState } from 'react'
+import { Users, GraduationCap, Building2 } from 'lucide-react'
+import { FacultyHeader } from './FacultyHeader'
+import { FacultySidebar, type FacultyTabType } from './FacultySidebar'
+import { FacultyFooter } from './FacultyFooter'
+import { AnalyticsChartsSection } from './AnalyticsChartsSection'
 import { StudentListTab } from './StudentListTab'
 import { FacultyListTab } from './FacultyListTab'
 import { DepartmentListTab } from './DepartmentListTab'
-import { cn } from '@/shared/utils/cn'
-
-const TABS = [
-  { id: 'student-list', label: 'Student List', icon: Users },
-  { id: 'faculty-list', label: 'Faculty List', icon: GraduationCap },
-  { id: 'department-list', label: 'Department List', icon: Building2 },
-] as const
+import { UploadFABModal } from './UploadFABModal'
 
 export function FacultyDashboard() {
-  const { user, signOut } = useAuth()
-
-  const displayName = user?.email?.split('@')[0] ?? 'Faculty'
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [activeSidebarTab, setActiveSidebarTab] = useState<FacultyTabType>('dashboard')
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top_left,_theme(colors.indigo.950)_0%,_theme(colors.slate.950)_60%)]">
-      {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/80 backdrop-blur">
-        <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-3">
-          {/* Logo / Branding */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/20 ring-1 ring-indigo-400/30">
-              <BookOpen className="h-4 w-4 text-indigo-400" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold leading-none text-slate-100">
-                Compensatory Course Dashboard
-              </p>
-              <p className="text-xs text-slate-500">Faculty Portal</p>
-            </div>
-          </div>
+    <div className="flex min-h-screen flex-col bg-[radial-gradient(ellipse_at_top,_theme(colors.slate.900)_0%,_theme(colors.slate.950)_70%)] text-slate-100 selection:bg-indigo-500 selection:text-white">
+      {/* Top Header Bar */}
+      <FacultyHeader
+        sidebarOpen={!sidebarCollapsed}
+        onToggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
+      />
 
-          {/* User + signout */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500/20 ring-1 ring-indigo-400/30 text-xs font-bold text-indigo-300">
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-            <span className="hidden text-sm text-slate-300 sm:block">{displayName}</span>
-            <button
-              id="faculty-signout-btn"
-              onClick={() => signOut()}
-              className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-400 transition hover:border-red-400/30 hover:text-red-400"
-              aria-label="Sign out"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
-          </div>
+      {/* Main Shell Body */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Collapsible Sidebar Navigation */}
+        <FacultySidebar
+          activeTab={activeSidebarTab}
+          onTabChange={(tab) => setActiveSidebarTab(tab)}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+        />
+
+        {/* Main Content Viewport */}
+        <div className="flex flex-1 flex-col overflow-y-auto">
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            {activeSidebarTab === 'dashboard' ? (
+              <div className="space-y-6">
+                {/* Top Split-Screen Analytics & Department Chart Section */}
+                <AnalyticsChartsSection />
+
+                {/* Main Student Directory Area */}
+                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-xl backdrop-blur">
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-3 mb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400 ring-1 ring-indigo-500/30">
+                        <Users className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-bold text-slate-100">Faculty Student Directory</h2>
+                        <p className="text-xs text-slate-400">Filter enrolled students by assigned course & subject</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Student List View with Subject Dropdown */}
+                  <StudentListTab />
+                </section>
+              </div>
+            ) : activeSidebarTab === 'faculty' ? (
+              /* Sidebar Selection: Faculty Directory Tab */
+              <div className="space-y-6">
+                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl backdrop-blur">
+                  <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400 ring-1 ring-indigo-500/30">
+                      <GraduationCap className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-100">Faculty Assignment Directory</h2>
+                      <p className="text-xs text-slate-400">Complete list of department faculty members and assigned subjects</p>
+                    </div>
+                  </div>
+
+                  <FacultyListTab />
+                </section>
+              </div>
+            ) : (
+              /* Sidebar Selection: Department Tab */
+              <div className="space-y-6">
+                <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl backdrop-blur">
+                  <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-6">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400 ring-1 ring-indigo-500/30">
+                      <Building2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-100">Department Academic Overview</h2>
+                      <p className="text-xs text-slate-400">Department-wise enrollment metrics and subject allocation</p>
+                    </div>
+                  </div>
+
+                  <DepartmentListTab />
+                </section>
+              </div>
+            )}
+          </main>
+
+          {/* Footer Bar */}
+          <FacultyFooter />
         </div>
-      </header>
+      </div>
 
-      {/* Main content */}
-      <main className="mx-auto max-w-screen-xl px-4 py-6 sm:px-6">
-        <Tabs.Root defaultValue="student-list" className="flex flex-col gap-4">
-          {/* Tab list */}
-          <Tabs.List
-            className="flex gap-1 rounded-xl border border-white/10 bg-white/5 p-1 w-fit"
-            aria-label="Faculty dashboard tabs"
-          >
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <Tabs.Trigger
-                key={id}
-                value={id}
-                id={`tab-${id}`}
-                className={cn(
-                  'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium',
-                  'text-slate-400 transition-all duration-150',
-                  'hover:text-slate-200',
-                  'data-[state=active]:bg-indigo-600/80 data-[state=active]:text-white',
-                  'data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-900/50'
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </Tabs.Trigger>
-            ))}
-          </Tabs.List>
-
-          {/* Tab panels */}
-          <Tabs.Content value="student-list" className="focus:outline-none">
-            <section>
-              <div className="mb-4">
-                <h1 className="text-lg font-bold text-slate-100">Student List</h1>
-                <p className="text-sm text-slate-400">
-                  Students enrolled in your assigned courses
-                </p>
-              </div>
-              <StudentListTab />
-            </section>
-          </Tabs.Content>
-
-          <Tabs.Content value="faculty-list" className="focus:outline-none">
-            <section>
-              <div className="mb-4">
-                <h1 className="text-lg font-bold text-slate-100">Faculty List</h1>
-                <p className="text-sm text-slate-400">
-                  Faculty assignments and subject registrations
-                </p>
-              </div>
-              <FacultyListTab />
-            </section>
-          </Tabs.Content>
-
-          <Tabs.Content value="department-list" className="focus:outline-none">
-            <section>
-              <div className="mb-4">
-                <h1 className="text-lg font-bold text-slate-100">Department List</h1>
-                <p className="text-sm text-slate-400">
-                  Department-wise student enrollment summary
-                </p>
-              </div>
-              <DepartmentListTab />
-            </section>
-          </Tabs.Content>
-        </Tabs.Root>
-      </main>
+      {/* Floating Action Button & Upload Modal */}
+      <UploadFABModal />
     </div>
   )
 }

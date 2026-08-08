@@ -25,6 +25,8 @@ export function useFacultyList({ filters, search }: UseFacultyListParams) {
 
   return useQuery({
     queryKey: ['faculty-list', filters, search],
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     queryFn: async () => {
       let query = supabase
         .from('faculty_assignments')

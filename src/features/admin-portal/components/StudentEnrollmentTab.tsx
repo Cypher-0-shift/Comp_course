@@ -4,8 +4,11 @@ import { SearchInput } from '@/features/faculty-dashboard/components/SearchInput
 import { FilterBar, type FilterBarConfig } from '@/features/faculty-dashboard/components/FilterBar'
 import { StudentDetailModal } from '@/features/faculty-dashboard/components/StudentDetailModal'
 import { useStudentList } from '@/features/faculty-dashboard/api/useStudentList'
+import { useAuth } from '@/shared/hooks/useAuth'
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import type { DeptStudentRow } from '../api/useDepartmentDetail'
 import type { FilterOptions } from '@/shared/types'
+import { Building2 } from 'lucide-react'
 
 const STATUS_BADGE: Record<string, string> = {
   enrolled: 'bg-indigo-500/20 text-indigo-300',
@@ -47,15 +50,21 @@ interface StudentEnrollmentTabProps {
 type ExtendedStudentRow = DeptStudentRow & { department_name?: string }
 
 export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoading }: StudentEnrollmentTabProps) {
+  const { role, departmentName } = useAuth()
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 250)
   const [filters, setFilters] = useState<FilterOptions>({})
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
 
   const isStandalone = propsRows === undefined
 
+  // Active department scope for HOD/Dean
+  const activeDeptScope = filters.department || departmentName || null
+
   const studentListQuery = useStudentList({
     filters,
-    search,
+    search: debouncedSearch,
+    departmentName: (role === 'hod' || role === 'dean') ? departmentName : null,
   })
 
   const isLoading = isStandalone ? studentListQuery.isLoading : (propsIsLoading ?? false)
@@ -68,11 +77,19 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
   }, [isStandalone, studentListQuery.data?.rows, propsRows])
 
   const filteredRows = useMemo(() => {
-    if (isStandalone) {
-      return rawRows
+    let rows = rawRows
+
+    // Enforce HOD / Dean department filtering if specified
+    if (activeDeptScope) {
+      const scopeLower = activeDeptScope.toLowerCase()
+      rows = rows.filter((r) => {
+        const prog = r.program?.toLowerCase() ?? ''
+        const dept = r.department_name?.toLowerCase() ?? ''
+        return prog.includes(scopeLower) || dept.includes(scopeLower)
+      })
     }
 
-    return rawRows.filter((r) => {
+    return rows.filter((r) => {
       if (filters.status && r.status !== filters.status) return false
       if (filters.program && r.program !== filters.program) return false
       if (
@@ -99,7 +116,7 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
       }
       return true
     })
-  }, [isStandalone, rawRows, filters, search])
+  }, [rawRows, activeDeptScope, filters, search])
 
   const filterOptions = useMemo<FilterBarConfig>(() => {
     const baseRows = isStandalone ? ((studentListQuery.data?.rows ?? []) as ExtendedStudentRow[]) : rawRows
@@ -130,6 +147,14 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Department Scope Banner */}
+      {activeDeptScope && (
+        <div className="flex items-center gap-2 rounded-xl border border-violet-500/30 bg-violet-500/10 px-4 py-2 text-xs font-medium text-violet-300 backdrop-blur">
+          <Building2 className="h-4 w-4 text-violet-400 shrink-0" />
+          <span>Showing students for department: <strong className="font-semibold text-white">{activeDeptScope}</strong></span>
+        </div>
+      )}
+
       {/* Toolbar with Search and Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <SearchInput

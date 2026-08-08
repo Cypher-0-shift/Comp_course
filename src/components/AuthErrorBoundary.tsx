@@ -72,7 +72,9 @@ export class AuthErrorBoundary extends Component<Props, State> {
               <Alert variant="destructive">
                 <AlertDescription className="text-left">
                   <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-32">
-                    {this.state.error?.message || 'Unknown error'}
+                    {import.meta.env.DEV
+                      ? this.state.error?.message || 'Unknown error'
+                      : 'An unexpected authentication error occurred. Please try signing in again.'}
                   </pre>
                 </AlertDescription>
               </Alert>

@@ -14,6 +14,8 @@ export function useDepartmentOverview() {
 
   return useQuery({
     queryKey: ['admin-department-overview'],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     queryFn: async () => {
       const { data: depts, error: deptError } = await supabase
         .from('departments')
