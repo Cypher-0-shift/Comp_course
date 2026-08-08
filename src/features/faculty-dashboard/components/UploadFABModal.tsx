@@ -1,7 +1,34 @@
 import { useState } from 'react'
 import { Plus, X, UploadCloud, FileText, CheckCircle2 } from 'lucide-react'
+import { z } from 'zod'
+import { toast } from 'sonner'
+import { validateFileContent } from '@/shared/utils/validation'
+import { useSupabase } from '@/shared/hooks/useSupabase'
+
+const ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword'
+]
+
+const uploadSchema = z.object({
+  documentType: z.enum(['syllabus', 'attendance', 'marks', 'notice']),
+  file: z.instanceof(File)
+    .refine((file) => file.size <= 10 * 1024 * 1024, 'File must be under 10MB')
+    .refine(
+      (file) => ALLOWED_MIME_TYPES.includes(file.type) || file.name.match(/\.(pdf|xlsx|csv|docx|doc)$/i),
+      'Invalid file type'
+    )
+    .refine(
+      async (file) => await validateFileContent(file),
+      'Invalid file content detected. File appears corrupted or forged.'
+    ),
+})
 
 export function UploadFABModal() {
+  const supabase = useSupabase()
   const [isOpen, setIsOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -15,20 +42,55 @@ export function UploadFABModal() {
     }
   }
 
-  function handleUploadSubmit(e: React.FormEvent) {
+  async function handleUploadSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedFile) return
+    if (!selectedFile) {
+      toast.error('Please select a file to upload.')
+      return
+    }
 
     setIsUploading(true)
-    setTimeout(() => {
-      setIsUploading(false)
+
+    try {
+      const validationResult = await uploadSchema.safeParseAsync({ documentType, file: selectedFile })
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message)
+        setIsUploading(false)
+        return
+      }
+
+      // Supabase Storage Integration
+      // Ensure the 'course_materials' bucket is created and configured for appropriate access.
+      const fileExt = selectedFile.name.split('.').pop()
+      const fileName = `${documentType}-${Date.now()}.${fileExt}`
+      const filePath = `uploads/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('course_materials')
+        .upload(filePath, selectedFile, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (uploadError) {
+        console.error('[Upload Error]', uploadError)
+        toast.error('Storage service error. Ensure the course_materials bucket exists.')
+        setIsUploading(false)
+        return
+      }
+
       setUploadSuccess(true)
       setTimeout(() => {
         setIsOpen(false)
         setSelectedFile(null)
         setUploadSuccess(false)
       }, 1500)
-    }, 1200)
+    } catch (err) {
+      console.error(err)
+      toast.error('An unexpected error occurred during upload.')
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   return (

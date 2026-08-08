@@ -5,6 +5,7 @@ import { useAuth } from '../../shared/hooks/useAuth'
 import { signIn, resendConfirmation } from '../../shared/hooks/useSupabase'
 import { toast } from 'sonner'
 import { cn } from '../../shared/utils/cn'
+import { handleUIError } from '@/shared/utils/error-handler'
 import {
   Card,
   CardContent,
@@ -24,8 +25,11 @@ import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 // =============================================
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email('Invalid email format').max(255, 'Email too long'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(64, 'Password too long')
+    .regex(/^[a-zA-Z0-9!@#$%^&*()_+=\-{}[\]:;"'<>,.?/`~|\\]+$/, 'Invalid characters in password'),
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>
@@ -114,7 +118,8 @@ export function LoginForm() {
       return true
     }
 
-    toast.error(error.message || 'An unexpected error occurred')
+    // Sanitize any unexpected errors using handleUIError
+    toast.error(handleUIError(error, 'Auth Form'))
     return true
   }
 

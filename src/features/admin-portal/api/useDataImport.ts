@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useSupabase } from '@/shared/hooks/useSupabase'
 import { validateStudentRow, validateFacultyRow, validateDepartmentRow } from '@/shared/utils/validation'
 import type { ImportType, ParsedRow, ImportResult } from '@/shared/utils/validation'
+import { SafeError, handleUIError } from '@/shared/utils/error-handler'
 
 export type { ImportType, ParsedRow, ImportResult }
 
@@ -58,10 +59,10 @@ export function useDataImport() {
 
   const importMutation = useMutation({
     mutationFn: async (passcode: string) => {
-      if (!importType) throw new Error('No import type selected')
+      if (!importType) throw new SafeError('No import type selected')
 
       const validRows = preview.filter((r) => r.valid).map((r) => r.data)
-      if (validRows.length === 0) throw new Error('No valid rows to import')
+      if (validRows.length === 0) throw new SafeError('No valid rows to import')
 
       // Layer 2 Verification: Try RPC first
       try {
@@ -79,8 +80,12 @@ export function useDataImport() {
       }
 
       // Local Passcode Verification Fallback
-      if (passcode !== 'ADMIN123') {
-        throw new Error('Invalid Security Verification Passcode. Data import denied.')
+      const expectedPasscode = import.meta.env.VITE_ADMIN_PASSCODE;
+      if (!expectedPasscode) {
+        throw new SafeError('Server configuration error: VITE_ADMIN_PASSCODE is not set.');
+      }
+      if (passcode !== expectedPasscode) {
+        throw new SafeError('Invalid Security Verification Passcode. Data import denied.')
       }
 
       const result: ImportResult = { inserted: 0, skipped: 0, errors: [] }
@@ -97,7 +102,7 @@ export function useDataImport() {
             students_registered: Number(row.students_registered || 0),
           }, { onConflict: 'department_name' })
 
-          if (error) { result.errors.push(`Row ${i + 1}: ${error.message}`); result.skipped++ }
+          if (error) { result.errors.push(`Row ${i + 1}: ${handleUIError(error, 'Data Import')}`); result.skipped++ }
           else result.inserted++
         }
       }
@@ -120,7 +125,7 @@ export function useDataImport() {
             email_id: row.email_id || row.email || '',
           })
 
-          if (error) { result.errors.push(`Row ${i + 1}: ${error.message}`); result.skipped++ }
+          if (error) { result.errors.push(`Row ${i + 1}: ${handleUIError(error, 'Data Import')}`); result.skipped++ }
           else result.inserted++
         }
       }
@@ -143,7 +148,7 @@ export function useDataImport() {
             status: row.status || 'enrolled',
           })
 
-          if (error) { result.errors.push(`Row ${i + 1}: ${error.message}`); result.skipped++ }
+          if (error) { result.errors.push(`Row ${i + 1}: ${handleUIError(error, 'Data Import')}`); result.skipped++ }
           else result.inserted++
         }
       }

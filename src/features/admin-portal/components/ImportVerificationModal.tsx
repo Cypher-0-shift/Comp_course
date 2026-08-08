@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { ShieldAlert, KeyRound, AlertTriangle, X, CheckCircle2, Loader2 } from 'lucide-react'
 import type { ImportType } from '../api/useDataImport'
+import { z } from 'zod'
+import { handleUIError } from '@/shared/utils/error-handler'
+
+const passcodeSchema = z.string().length(8, 'Passcode must be exactly 8 characters').regex(/^[A-Z0-9]+$/, 'Passcode must be uppercase alphanumeric characters')
 
 interface ImportVerificationModalProps {
   isOpen: boolean
@@ -34,15 +38,17 @@ export function ImportVerificationModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    if (!passcode.trim()) {
-      setError('Please enter the security verification passcode.')
+    
+    const validationResult = passcodeSchema.safeParse(passcode.trim())
+    if (!validationResult.success) {
+      setError(validationResult.error.errors[0].message)
       return
     }
 
     try {
       await onConfirm(passcode.trim())
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Verification failed'
+      const msg = handleUIError(err, 'Import Verification Modal')
       setError(msg)
     }
   }
@@ -97,14 +103,14 @@ export function ImportVerificationModal({
                 type="password"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
-                placeholder="Passcode (e.g. ADMIN123)"
+                placeholder="Enter security passcode"
                 disabled={isPending}
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 pl-9 pr-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/50"
                 autoFocus
               />
             </div>
             <p className="mt-1 text-[11px] text-slate-400">
-              Demo passcode: <code className="text-indigo-300 bg-slate-800 px-1 py-0.5 rounded">ADMIN123</code>
+              Passcode is provided by your system administrator.
             </p>
           </div>
 

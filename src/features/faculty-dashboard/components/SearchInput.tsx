@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Search, X } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
+import { z } from 'zod'
+
+const searchSchema = z.string().max(50).regex(/^[a-zA-Z0-9\s\-_]*$/, 'Invalid search format')
 
 interface SearchInputProps {
   value: string
@@ -27,6 +30,8 @@ export function SearchInput({
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value
+    if (v !== '' && !searchSchema.safeParse(v).success) return // Reject invalid input
+    
     setLocal(v)
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => onChange(v), debounceMs)
