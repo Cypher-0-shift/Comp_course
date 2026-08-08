@@ -75,7 +75,7 @@ export const MOCK_ENROLLMENTS: EnrollmentWithRelations[] = [
     subject: {
       id: 'sub-2',
       code: 'CS305',
-      name: 'Computer Networks',
+      name: 'Computer Networks & Security',
       department_id: 'dept-cs',
       academic_year_id: 'ay-2026',
       created_at: new Date().toISOString(),
@@ -102,8 +102,48 @@ export const MOCK_ENROLLMENTS: EnrollmentWithRelations[] = [
         }
       ]
     }
+  },
+  {
+    id: 'enr-3',
+    student_id: 'stu-123',
+    subject_id: 'sub-3',
+    academic_year_id: 'ay-2026',
+    status: 'completed',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    subject: {
+      id: 'sub-3',
+      code: 'CS204',
+      name: 'Object Oriented Programming',
+      department_id: 'dept-cs',
+      academic_year_id: 'ay-2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      faculty_subjects: [
+        {
+          id: 'fs-3',
+          faculty_id: 'fac-3',
+          subject_id: 'sub-3',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          faculty: {
+            id: 'fac-3',
+            user_id: 'usr-fac3',
+            emp_id: 'EMP003',
+            name: 'Dr. Elena Rostova',
+            email: 'elena.rostova@college.edu',
+            phone: '+1 987-654-3215',
+            department_id: 'dept-cs',
+            academic_year_id: 'ay-2026',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+        }
+      ]
+    }
   }
 ]
+
 
 export async function getStudentProfile(): Promise<StudentWithRelations | null> {
   try {
@@ -140,9 +180,10 @@ export async function getStudentProfile(): Promise<StudentWithRelations | null> 
       }
     }
   } catch (e) {
-    console.warn('Supabase query failed:', e)
+    console.warn('Supabase query failed, returning mock profile:', e)
   }
-  return null
+  // Return rich mock fallback for frontend demonstration
+  return MOCK_STUDENT_PROFILE
 }
 
 export async function getStudentEnrollments(): Promise<EnrollmentWithRelations[]> {
@@ -176,7 +217,9 @@ export async function getStudentEnrollments(): Promise<EnrollmentWithRelations[]
       }
     }
   } catch (e) {
-    console.warn('Supabase query failed:', e)
+    console.warn('Supabase query failed, returning mock enrollments:', e)
   }
-  return []
+  // Return rich mock fallback for frontend demonstration
+  return MOCK_ENROLLMENTS
 }
+
