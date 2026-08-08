@@ -1,13 +1,25 @@
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { AccessDenied } from './AccessDenied'
-import { LoginForm } from '@/features/auth/LoginForm'
-import { FacultyDashboard } from '@/features/faculty-dashboard'
-import { AdminDashboard } from '@/features/admin-portal'
 
-import { StudentLayout } from '@/features/student-portal/layouts/StudentLayout'
-import { StudentDashboard } from '@/features/student-portal/pages/StudentDashboard'
+const LoginForm = lazy(() => import('@/features/auth/LoginForm').then(m => ({ default: m.LoginForm })))
+const FacultyDashboard = lazy(() => import('@/features/faculty-dashboard').then(m => ({ default: m.FacultyDashboard })))
+const AdminDashboard = lazy(() => import('@/features/admin-portal').then(m => ({ default: m.AdminDashboard })))
+const StudentLayout = lazy(() => import('@/features/student-portal/layouts/StudentLayout').then(m => ({ default: m.StudentLayout })))
+const StudentDashboard = lazy(() => import('@/features/student-portal/pages/StudentDashboard').then(m => ({ default: m.StudentDashboard })))
 
+const LoadingSpinner = () => (
+  <div className="flex h-screen w-screen items-center justify-center bg-slate-950">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+  </div>
+)
+
+const LazyElement = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<LoadingSpinner />}>
+    {children}
+  </Suspense>
+)
 
 function LoginPage() {
   return <LoginForm />
@@ -16,7 +28,7 @@ function LoginPage() {
 export const router = (
   <Routes>
     {/* Public routes */}
-    <Route path="/login" element={<LoginPage />} />
+    <Route path="/login" element={<LazyElement><LoginPage /></LazyElement>} />
     <Route path="/access-denied" element={<AccessDenied />} />
 
     {/* Protected routes - Student */}
@@ -24,12 +36,12 @@ export const router = (
       path="/student"
       element={
         <ProtectedRoute allowedRoles={['student']}>
-          <StudentLayout />
+          <LazyElement><StudentLayout /></LazyElement>
         </ProtectedRoute>
       }
     >
       <Route index element={<Navigate to="dashboard" replace />} />
-      <Route path="dashboard" element={<StudentDashboard />} />
+      <Route path="dashboard" element={<LazyElement><StudentDashboard /></LazyElement>} />
     </Route>
 
     {/* Protected routes - Faculty */}
@@ -37,7 +49,7 @@ export const router = (
       path="/faculty/*"
       element={
         <ProtectedRoute allowedRoles={['faculty']}>
-          <FacultyDashboard />
+          <LazyElement><FacultyDashboard /></LazyElement>
         </ProtectedRoute>
       }
     />
@@ -48,7 +60,7 @@ export const router = (
       path="/admin/*"
       element={
         <ProtectedRoute allowedRoles={['hod', 'dean']}>
-          <AdminDashboard />
+          <LazyElement><AdminDashboard /></LazyElement>
         </ProtectedRoute>
       }
     />
