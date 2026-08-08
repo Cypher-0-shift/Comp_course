@@ -12,7 +12,7 @@ import { UploadFABModal } from '@/features/faculty-dashboard/components/UploadFA
 
 export function AdminDashboard() {
   const { role } = useAuth()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-violet-500 selection:text-white font-sans relative">
@@ -30,6 +30,15 @@ export function AdminDashboard() {
 
       {/* Main Shell Body */}
       <div className="flex flex-1 overflow-hidden relative z-10">
+        {/* Mobile Overlay */}
+        {!sidebarCollapsed && (
+          <div 
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 md:hidden"
+            onClick={() => setSidebarCollapsed(true)}
+            aria-hidden="true"
+          />
+        )}
+
         {/* Left Collapsible Sidebar Navigation */}
         <AdminSidebar
           collapsed={sidebarCollapsed}
@@ -37,8 +46,8 @@ export function AdminDashboard() {
         />
 
         {/* Main Content Viewport */}
-        <div className="flex flex-1 flex-col overflow-y-auto">
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-1 flex-col overflow-y-auto w-full">
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 md:px-6 md:py-6 lg:px-8">
             <Routes>
               <Route index element={
                 <section>

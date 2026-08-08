@@ -20,7 +20,7 @@ export function StudentLayout() {
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-lg tracking-tight text-white">
+                <span className="font-extrabold text-base md:text-lg tracking-tight text-white truncate max-w-[140px] md:max-w-none">
                   Compensatory Portal
                 </span>
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -37,7 +37,7 @@ export function StudentLayout() {
                 {displayName.charAt(0).toUpperCase()}
                 <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-slate-950" />
               </div>
-              <span className="text-xs font-semibold text-slate-200 tracking-tight max-w-[140px] truncate sm:max-w-none">
+              <span className="text-xs font-semibold text-slate-200 tracking-tight truncate hidden md:block">
                 {displayName}
               </span>
             </div>
@@ -46,7 +46,7 @@ export function StudentLayout() {
               id="student-signout-btn"
               variant="ghost"
               size="sm"
-              className="text-slate-300 hover:text-rose-400 hover:bg-rose-500/10 border border-slate-800 hover:border-rose-500/30 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 px-3"
+              className="text-slate-300 hover:text-rose-400 hover:bg-rose-500/10 border border-slate-800 hover:border-rose-500/30 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 px-3 min-h-[40px] md:min-h-[48px]"
               onClick={() => signOut()}
               aria-label="Sign out"
               title="Sign out of student portal"
@@ -59,7 +59,7 @@ export function StudentLayout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 max-w-6xl relative z-10">
+      <main className="flex-1 container mx-auto px-4 py-4 md:px-6 md:py-8 max-w-6xl relative z-10 w-full overflow-x-hidden">
         <Outlet />
       </main>
 

@@ -124,7 +124,7 @@ export function DataTable<T extends object>({
                 <th
                   key={col.key}
                   className={cn(
-                    'px-4 py-3.5 font-bold uppercase tracking-wider text-[11px] text-indigo-300 select-none whitespace-nowrap',
+                    'px-4 py-4 md:py-3.5 font-bold uppercase tracking-wider text-[11px] text-indigo-300 select-none whitespace-nowrap',
                     col.sortable && onSort && 'cursor-pointer hover:text-white transition-colors',
                     col.className
                   )}
@@ -182,7 +182,7 @@ export function DataTable<T extends object>({
                         onClick={(e) => toggleRowExpand(key, row, e)}
                       >
                         {renderExpandedRow && (
-                          <td className="px-3 py-3.5 text-center text-slate-400">
+                          <td className="px-3 py-4 md:py-3.5 text-center text-slate-400">
                             <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-slate-800/80 text-slate-300 transition group-hover:bg-indigo-600 group-hover:text-white">
                               <ChevronRight
                                 className={cn(
@@ -198,7 +198,10 @@ export function DataTable<T extends object>({
                           return (
                             <td
                               key={col.key}
-                              className={cn('px-4 py-3.5 text-slate-200 whitespace-nowrap font-medium', col.className)}
+                              className={cn(
+                                'px-4 py-4 whitespace-nowrap text-slate-300 font-medium',
+                                col.className
+                              )}
                             >
                               {col.render ? col.render(raw, row) : (raw as React.ReactNode) ?? '—'}
                             </td>

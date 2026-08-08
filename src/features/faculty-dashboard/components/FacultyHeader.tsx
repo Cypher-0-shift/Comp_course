@@ -41,7 +41,7 @@ export function FacultyHeader({ sidebarOpen, onToggleSidebar }: FacultyHeaderPro
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h1 className="text-base font-extrabold tracking-tight text-white">
+                <h1 className="text-base md:text-lg font-extrabold tracking-tight text-white truncate max-w-[130px] md:max-w-none">
                   Compensatory Portal
                 </h1>
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -56,7 +56,7 @@ export function FacultyHeader({ sidebarOpen, onToggleSidebar }: FacultyHeaderPro
         {/* Right Side: Notification Pill, User Menu & Sign Out */}
         <div className="flex items-center gap-3 sm:gap-4">
           <button
-            className="relative flex h-8 w-8 items-center justify-center rounded-full border border-slate-800 bg-slate-900/80 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            className="relative flex items-center justify-center rounded-full border border-slate-800 bg-slate-900/80 text-slate-300 transition hover:bg-slate-800 hover:text-white h-10 w-10 md:h-8 md:w-8"
             title="System Notifications"
           >
             <Bell className="h-4 w-4" />
@@ -78,7 +78,7 @@ export function FacultyHeader({ sidebarOpen, onToggleSidebar }: FacultyHeaderPro
           <button
             id="faculty-header-signout-btn"
             onClick={() => signOut()}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition-all hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition-all hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 cursor-pointer min-h-[40px] md:min-h-[48px]"
             aria-label="Sign out"
           >
             <LogOut className="h-4 w-4" />

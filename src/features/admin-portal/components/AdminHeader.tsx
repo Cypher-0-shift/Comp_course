@@ -42,14 +42,14 @@ export function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeaderProps) 
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h1 className="text-base font-extrabold tracking-tight text-white">
+                <h1 className="text-base md:text-lg font-extrabold tracking-tight text-white truncate max-w-[130px] md:max-w-none">
                   Compensatory Portal
                 </h1>
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-500/20 text-violet-300 border border-violet-500/30">
                   {roleLabel}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="hidden md:flex items-center gap-1.5">
                 <span className="inline-flex items-center gap-1 text-[11px] font-medium text-violet-300">
                   <ShieldCheck className="h-3 w-3" /> Executive Dashboard
                 </span>
@@ -64,7 +64,7 @@ export function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeaderProps) 
         {/* Right Side: User Profile & Actions */}
         <div className="flex items-center gap-3 sm:gap-4">
           <button
-            className="relative flex h-8 w-8 items-center justify-center rounded-full border border-slate-800 bg-slate-900/80 text-slate-300 transition hover:bg-slate-800 hover:text-white cursor-pointer"
+            className="relative flex items-center justify-center rounded-full border border-slate-800 bg-slate-900/80 text-slate-300 transition hover:bg-slate-800 hover:text-white cursor-pointer h-10 w-10 md:h-8 md:w-8"
             title="System Notifications"
           >
             <Bell className="h-4 w-4" />
@@ -86,7 +86,7 @@ export function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeaderProps) 
           <button
             id="admin-header-signout-btn"
             onClick={() => signOut()}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition-all hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 transition-all hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-400 cursor-pointer min-h-[40px] md:min-h-[48px]"
             aria-label="Sign out"
           >
             <LogOut className="h-4 w-4" />

@@ -36,7 +36,7 @@ function SelectField({ id, label, value, options, onChange }: SelectFieldProps) 
       <Select.Trigger
         id={id}
         className={cn(
-          'flex h-9 min-w-[140px] items-center justify-between gap-1.5 rounded-lg',
+          'flex h-12 md:h-9 w-full md:w-auto md:min-w-[140px] items-center justify-between gap-1.5 rounded-lg',
           'border border-white/10 bg-white/5 px-3 text-sm text-slate-200',
           'outline-none transition hover:bg-white/10 focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/30',
           value && 'border-indigo-400/40 bg-indigo-500/10 text-indigo-300'
@@ -88,7 +88,7 @@ export function FilterBar({ filters, options, onChange, onReset }: FilterBarProp
   const hasActiveFilter = Object.values(filters).some(Boolean)
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 md:gap-3 w-full">
       {options.department && options.department.length > 0 && (
         <SelectField
           id="filter-department"
