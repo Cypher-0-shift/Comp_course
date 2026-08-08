@@ -31,3 +31,16 @@ coverage/
 # Misc
 *.pem
 .cache/
+Faculty data.csv
+Faculty datab.csv
+*.md
+grun
+*.bat
+/node_modules
+grun.ps1
+grun.cmd
+/supabase
+/scripts
+/node_modules
+/supabase
+supabase/seed.sql

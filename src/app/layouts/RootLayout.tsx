@@ -17,12 +17,14 @@ const queryClient = new QueryClient({
 export function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Toaster position="top-right" richColors />
-        <AuthErrorBoundary>
-          <BrowserRouter>{router}</BrowserRouter>
-        </AuthErrorBoundary>
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Toaster position="top-right" richColors />
+          <AuthErrorBoundary>
+            {router}
+          </AuthErrorBoundary>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   )
 }

@@ -1,0 +1,38 @@
+/*
+  Netlify Headers - Security Hardening
+  Applies: frontend-security-coder + backend-security-coder principles
+
+  These headers are sent with every response from Netlify CDN.
+  For Vite dev server, see vite.config.ts server.headers config.
+*/
+
+/*
+  Apply to ALL pages
+*/
+/*
+  Content-Security-Policy:
+  - default-src 'self'                   — only load resources from same origin by default
+  - script-src 'self'                    — no inline scripts, no eval
+  - style-src 'self' 'unsafe-inline'     — allow inline styles (Tailwind/Radix needs this)
+  - img-src 'self' data: blob:           — allow data URIs for avatars, blob for file previews
+  - connect-src 'self' https://*.supabase.co wss://*.supabase.co — Supabase REST + realtime
+  - font-src 'self'
+  - frame-ancestors 'none'              — clickjacking prevention
+  - form-action 'self'                  — prevent form hijacking
+  - base-uri 'self'                     — prevent base tag injection
+*/
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; font-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self';"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+# Cache static assets aggressively (they have content-hashed filenames from Vite)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

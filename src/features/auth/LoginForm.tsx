@@ -294,8 +294,10 @@ export function LoginForm() {
               )}
             </Button>
 
+
+
             {/* Forgot Password Link */}
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-muted-foreground pt-2">
               <a
                 href="#"
                 className="underline hover:no-underline"

@@ -1,0 +1,138 @@
+import * as Select from '@radix-ui/react-select'
+import { ChevronDown, Check } from 'lucide-react'
+import { cn } from '@/shared/utils/cn'
+import type { FilterOptions } from '@/shared/types'
+
+export interface FilterOption {
+  value: string
+  label: string
+}
+
+export interface FilterBarConfig {
+  department?: FilterOption[]
+  program?: FilterOption[]
+  subject?: FilterOption[]
+  status?: FilterOption[]
+}
+
+interface FilterBarProps {
+  filters: FilterOptions
+  options: FilterBarConfig
+  onChange: (key: keyof FilterOptions, value: string) => void
+  onReset: () => void
+}
+
+interface SelectFieldProps {
+  id: string
+  label: string
+  value: string
+  options: FilterOption[]
+  onChange: (value: string) => void
+}
+
+function SelectField({ id, label, value, options, onChange }: SelectFieldProps) {
+  return (
+    <Select.Root value={value || 'all'} onValueChange={(v) => onChange(v === 'all' ? '' : v)}>
+      <Select.Trigger
+        id={id}
+        className={cn(
+          'flex h-9 min-w-[140px] items-center justify-between gap-1.5 rounded-lg',
+          'border border-white/10 bg-white/5 px-3 text-sm text-slate-200',
+          'outline-none transition hover:bg-white/10 focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/30',
+          value && 'border-indigo-400/40 bg-indigo-500/10 text-indigo-300'
+        )}
+        aria-label={label}
+      >
+        <Select.Value placeholder={label} />
+        <Select.Icon>
+          <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+        </Select.Icon>
+      </Select.Trigger>
+
+      <Select.Portal>
+        <Select.Content
+          className="z-50 min-w-[160px] overflow-hidden rounded-xl border border-white/10 bg-slate-900 shadow-2xl"
+          position="popper"
+          sideOffset={4}
+        >
+          <Select.Viewport className="p-1">
+            <Select.Item
+              value="all"
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400 outline-none hover:bg-white/5 hover:text-slate-200 data-[state=checked]:text-indigo-300"
+            >
+              <Select.ItemIndicator>
+                <Check className="h-3.5 w-3.5" />
+              </Select.ItemIndicator>
+              <Select.ItemText>All {label}s</Select.ItemText>
+            </Select.Item>
+            {options.map((opt) => (
+              <Select.Item
+                key={opt.value}
+                value={opt.value}
+                className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none hover:bg-white/5 data-[state=checked]:text-indigo-300"
+              >
+                <Select.ItemIndicator>
+                  <Check className="h-3.5 w-3.5" />
+                </Select.ItemIndicator>
+                <Select.ItemText>{opt.label}</Select.ItemText>
+              </Select.Item>
+            ))}
+          </Select.Viewport>
+        </Select.Content>
+      </Select.Portal>
+    </Select.Root>
+  )
+}
+
+export function FilterBar({ filters, options, onChange, onReset }: FilterBarProps) {
+  const hasActiveFilter = Object.values(filters).some(Boolean)
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {options.department && options.department.length > 0 && (
+        <SelectField
+          id="filter-department"
+          label="Department"
+          value={filters.department ?? ''}
+          options={options.department}
+          onChange={(v) => onChange('department', v)}
+        />
+      )}
+      {options.program && options.program.length > 0 && (
+        <SelectField
+          id="filter-program"
+          label="Program"
+          value={filters.program ?? ''}
+          options={options.program}
+          onChange={(v) => onChange('program', v)}
+        />
+      )}
+      {options.subject && options.subject.length > 0 && (
+        <SelectField
+          id="filter-subject"
+          label="Subject"
+          value={filters.subject ?? ''}
+          options={options.subject}
+          onChange={(v) => onChange('subject', v)}
+        />
+      )}
+      {options.status && options.status.length > 0 && (
+        <SelectField
+          id="filter-status"
+          label="Status"
+          value={filters.status ?? ''}
+          options={options.status}
+          onChange={(v) => onChange('status', v)}
+        />
+      )}
+      {hasActiveFilter && (
+        <button
+          onClick={onReset}
+          className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-400 transition hover:border-red-400/30 hover:text-red-400"
+        >
+          Clear filters
+        </button>
+      )}
+    </div>
+  )
+}

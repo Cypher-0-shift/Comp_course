@@ -4,8 +4,7 @@ import * as React from 'react'
 import * as LabelPrimitive from '@radix-ui/react-label'
 import { cn } from '../../shared/utils/cn'
 
-export interface LabelProps
-  extends React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> {}
+export type LabelProps = React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
 
 export const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,

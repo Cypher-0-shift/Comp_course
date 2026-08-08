@@ -194,6 +194,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const activityListenersRef = useRef<(() => void)[]>([])
   const isSignedOutRef = useRef(false)
+  const sessionRef = useRef<Session | null>(null)
+
+  // Keep sessionRef updated
+  useEffect(() => {
+    sessionRef.current = session
+  }, [session])
 
   // Computed values
   const { role, departmentId } = extractUserMetadata(user)
@@ -225,41 +231,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   // =============================================
-  // Idle Timeout Check
-  // =============================================
-
-  const checkIdleTimeout = useCallback(() => {
-    if (!session || isSignedOutRef.current) return
-
-    const timeSinceActivity = Date.now() - lastActivityRef.current
-    if (timeSinceActivity >= IDLE_TIMEOUT_MS) {
-      // Idle timeout reached - sign out
-      isSignedOutRef.current = true
-      handleSignOut()
-      toast.error('Session expired', {
-        description: 'You have been logged out due to 30 minutes of inactivity.',
-      })
-    }
-  }, [session])
-
-  const startIdleTimer = useCallback(() => {
-    if (idleTimerRef.current) return
-    idleTimerRef.current = setInterval(checkIdleTimeout, IDLE_CHECK_INTERVAL_MS)
-  }, [checkIdleTimeout])
-
-  const stopIdleTimer = useCallback(() => {
-    if (idleTimerRef.current) {
-      clearInterval(idleTimerRef.current)
-      idleTimerRef.current = null
-    }
-  }, [])
-
-  // =============================================
   // Sign Out Handler
   // =============================================
 
   const handleSignOut = useCallback(async () => {
-    stopIdleTimer()
+    if (idleTimerRef.current) {
+      clearInterval(idleTimerRef.current)
+      idleTimerRef.current = null
+    }
     stopActivityTracking()
     unregisterSession()
     isSignedOutRef.current = true
@@ -273,7 +252,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null)
       navigate('/login')
     }
-  }, [navigate, stopIdleTimer, stopActivityTracking])
+  }, [navigate, stopActivityTracking])
+
+  // =============================================
+  // Idle Timeout Check
+  // =============================================
+
+  const checkIdleTimeout = useCallback(() => {
+    if (!sessionRef.current || isSignedOutRef.current) return
+
+    const timeSinceActivity = Date.now() - lastActivityRef.current
+    if (timeSinceActivity >= IDLE_TIMEOUT_MS) {
+      // Idle timeout reached - sign out
+      isSignedOutRef.current = true
+      handleSignOut()
+      toast.error('Session expired', {
+        description: 'You have been logged out due to 30 minutes of inactivity.',
+      })
+    }
+  }, [handleSignOut])
+
+  const startIdleTimer = useCallback(() => {
+    if (idleTimerRef.current) return
+    idleTimerRef.current = setInterval(checkIdleTimeout, IDLE_CHECK_INTERVAL_MS)
+  }, [checkIdleTimeout])
+
+  const stopIdleTimer = useCallback(() => {
+    if (idleTimerRef.current) {
+      clearInterval(idleTimerRef.current)
+      idleTimerRef.current = null
+    }
+  }, [])
 
   // =============================================
   // Redirect to Dashboard
@@ -298,6 +307,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     },
     [navigate]
   )
+
+
 
   // =============================================
   // Effect 1: Initial Session Load
@@ -333,7 +344,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       mounted = false
     }
-  }, [supabase.auth, startIdleTimer, startActivityTracking])
+  }, [])
 
   // =============================================
   // Effect 2: Auth State Change Listener
@@ -376,14 +387,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       data.subscription.unsubscribe()
     }
-  }, [
-    supabase.auth,
-    handleSignOut,
-    startIdleTimer,
-    startActivityTracking,
-    stopIdleTimer,
-    stopActivityTracking,
-  ])
+  }, [])
 
   // =============================================
   // Effect 3: Cross-tab Session Sync (Storage Events)

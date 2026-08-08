@@ -1,59 +1,48 @@
-// Shared TypeScript types for the Compensatory Course Dashboard
-// Mirrors the Supabase database schema from CONTEXT.md
+// Shared TypeScript types for the Compensatory Course Dashboard (3-Table Flat Schema)
 
 export type UserRole = 'student' | 'faculty' | 'hod' | 'dean'
 
-export interface AcademicYear {
-  id: string
-  start_year: number
-  end_year: number
-  is_active: boolean
-  label: string
-  created_at: string
-  updated_at: string
-}
-
 export interface Department {
   id: string
-  name: string
-  code: string
-  academic_year_id: string
+  sl_no: number
+  department_name: string
+  students_registered: number
   created_at: string
   updated_at: string
 }
 
-export interface Faculty {
+export interface StudentEnrollment {
   id: string
-  user_id: string
+  sno: number | null
+  student_name: string
+  register_no: string
+  program: string
+  mobile_no: string | null
+  email_id: string
+  subject_code: string
+  subject_name: string
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export interface FacultyAssignment {
+  id: string
+  sno: number | null
+  subject_code: string
+  subject_name: string
+  students_registered: number
+  faculty_name: string
+  department: string
   emp_id: string
-  name: string
-  email: string
-  phone: string
-  department_id: string
-  academic_year_id: string
+  mobile_number: string | null
+  email_id: string | null
   created_at: string
   updated_at: string
 }
 
-export interface Subject {
-  id: string
-  code: string
-  name: string
-  department_id: string
-  academic_year_id: string
-  created_at: string
-  updated_at: string
-}
-
-export interface FacultySubject {
-  id: string
-  faculty_id: string
-  subject_id: string
-  created_at: string
-  updated_at: string
-}
-
-export interface Student {
+// Backward compatibility interfaces/aliases for existing views
+export interface StudentWithRelations {
   id: string
   user_id: string
   register_no: string
@@ -65,55 +54,52 @@ export interface Student {
   academic_year_id: string
   created_at: string
   updated_at: string
+  department?: {
+    id: string
+    name: string
+    code: string
+    academic_year_id: string
+    created_at: string
+    updated_at: string
+  }
 }
 
-export interface Enrollment {
+export interface EnrollmentWithRelations {
   id: string
   student_id: string
   subject_id: string
   academic_year_id: string
-  status: 'enrolled' | 'completed' | 'dropped'
+  status: string
   created_at: string
   updated_at: string
-}
-
-// Extended types with relations for API responses
-export interface StudentWithRelations extends Student {
-  department?: Department
-  academic_year?: AcademicYear
-  enrollments?: EnrollmentWithRelations[]
-}
-
-export interface EnrollmentWithRelations extends Enrollment {
-  student?: Student
-  subject?: Subject
-  academic_year?: AcademicYear
-}
-
-export interface FacultyWithRelations extends Faculty {
-  department?: Department
-  academic_year?: AcademicYear
-  faculty_subjects?: FacultySubjectWithSubject[]
-}
-
-export interface FacultySubjectWithSubject extends FacultySubject {
-  subject?: Subject
-}
-
-export interface SubjectWithRelations extends Subject {
-  department?: Department
-  academic_year?: AcademicYear
-  faculty_subjects?: FacultySubjectWithFaculty[]
-}
-
-export interface FacultySubjectWithFaculty extends FacultySubject {
-  faculty?: Faculty
-}
-
-export interface DepartmentWithCounts extends Department {
-  students_registered?: number
-  faculty_assignments?: FacultyWithRelations[]
-  student_enrollments?: EnrollmentWithRelations[]
+  subject?: {
+    id: string
+    code: string
+    name: string
+    department_id: string
+    academic_year_id: string
+    created_at: string
+    updated_at: string
+    faculty_subjects?: Array<{
+      id: string
+      faculty_id: string
+      subject_id: string
+      created_at: string
+      updated_at: string
+      faculty?: {
+        id: string
+        user_id: string
+        emp_id: string
+        name: string
+        email: string
+        phone: string
+        department_id: string
+        academic_year_id: string
+        created_at: string
+        updated_at: string
+      }
+    }>
+  }
 }
 
 // Auth-related types
