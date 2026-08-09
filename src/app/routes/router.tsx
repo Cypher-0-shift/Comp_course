@@ -4,6 +4,7 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { AccessDenied } from './AccessDenied'
 
 const LoginForm = lazy(() => import('@/features/auth/LoginForm').then(m => ({ default: m.LoginForm })))
+const AuthCallback = lazy(() => import('@/features/auth/AuthCallback').then(m => ({ default: m.AuthCallback })))
 const FacultyDashboard = lazy(() => import('@/features/faculty-dashboard').then(m => ({ default: m.FacultyDashboard })))
 const AdminDashboard = lazy(() => import('@/features/admin-portal').then(m => ({ default: m.AdminDashboard })))
 const StudentLayout = lazy(() => import('@/features/student-portal/layouts/StudentLayout').then(m => ({ default: m.StudentLayout })))
@@ -29,6 +30,7 @@ export const router = (
   <Routes>
     {/* Public routes */}
     <Route path="/login" element={<LazyElement><LoginPage /></LazyElement>} />
+    <Route path="/auth/callback" element={<LazyElement><AuthCallback /></LazyElement>} />
     <Route path="/access-denied" element={<AccessDenied />} />
 
     {/* Protected routes - Student */}
