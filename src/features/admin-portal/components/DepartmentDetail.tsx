@@ -22,7 +22,9 @@ export function DepartmentDetail() {
   const uniqueSubjects = useMemo(() => {
     const map = new Map<string, string>()
     rawStudentRows.forEach((r) => {
-      if (r.subject_code && r.subject_name) {
+      if (r.enrolled_subjects && r.enrolled_subjects.length > 0) {
+        r.enrolled_subjects.forEach((s) => map.set(s.subject_code, s.subject_name))
+      } else if (r.subject_code && r.subject_name) {
         map.set(r.subject_code, r.subject_name)
       }
     })
@@ -37,7 +39,11 @@ export function DepartmentDetail() {
   // Filter student and faculty rows by selected subject dropdown
   const filteredStudentRows = useMemo(() => {
     if (selectedSubjectCode === 'all') return rawStudentRows
-    return rawStudentRows.filter((r) => r.subject_code === selectedSubjectCode)
+    return rawStudentRows.filter(
+      (r) =>
+        r.enrolled_subjects?.some((s) => s.subject_code === selectedSubjectCode) ||
+        r.subject_code.includes(selectedSubjectCode)
+    )
   }, [rawStudentRows, selectedSubjectCode])
 
   const filteredFacultyRows = useMemo(() => {

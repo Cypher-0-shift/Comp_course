@@ -6,14 +6,14 @@ import { type FacultyAssignmentRow } from '../api/useDepartmentDetail'
 
 const FACULTY_COLS: ColumnDef<FacultyAssignmentRow>[] = [
   { key: 'sno', header: '#', className: 'w-12 text-slate-400 font-mono text-xs' },
-  { key: 'faculty_name', header: 'Faculty Name', sortable: true },
-  { key: 'emp_id', header: 'Emp ID', className: 'font-mono text-xs text-violet-400 font-bold' },
-  { key: 'subject_code', header: 'Subject Code', className: 'font-mono text-xs text-slate-300 font-bold' },
-  { key: 'subject_name', header: 'Subject Name' },
+  { key: 'faculty_name', header: 'Faculty Name', sortable: true, className: 'font-semibold text-slate-100' },
+  { key: 'emp_id', header: 'Emp ID', className: 'font-mono text-xs text-violet-300 font-bold' },
+  { key: 'subject_code', header: 'Subject Code', className: 'font-mono text-xs text-violet-300 font-bold' },
+  { key: 'subject_name', header: 'Subject Name', className: 'text-slate-100 font-semibold text-xs' },
   {
     key: 'mobile',
     header: 'Mobile',
-    render: (v) => <span className="font-mono text-xs text-slate-400">{(v as string) || '—'}</span>,
+    render: (v) => <span className="font-mono text-xs text-slate-300">{(v as string) || '—'}</span>,
   },
 ]
 

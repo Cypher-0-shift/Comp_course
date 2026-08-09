@@ -17,18 +17,54 @@ const STATUS_BADGE: Record<string, string> = {
 }
 
 const STUDENT_COLS: ColumnDef<DeptStudentRow>[] = [
-  { key: 'sno', header: '#', className: 'w-12 text-slate-400' },
-  { key: 'student_name', header: 'Student Name', sortable: true },
-  { key: 'register_no', header: 'Register No', sortable: true },
-  { key: 'program', header: 'Program' },
-  { key: 'subject_code', header: 'Subject Code' },
-  { key: 'subject_name', header: 'Subject' },
+  { key: 'sno', header: '#', className: 'w-12 text-slate-400 font-mono text-xs' },
+  { key: 'student_name', header: 'Student Name', sortable: true, className: 'font-semibold text-slate-100' },
+  { key: 'register_no', header: 'Register No', sortable: true, className: 'font-mono text-xs text-violet-300 font-bold' },
+  { key: 'program', header: 'Program / Department', className: 'text-slate-300 text-xs' },
+  {
+    key: 'subject_code',
+    header: 'Subject Code(s)',
+    render: (_, r) => (
+      <div className="flex flex-wrap gap-1">
+        {r.enrolled_subjects && r.enrolled_subjects.length > 0 ? (
+          r.enrolled_subjects.map((sub) => (
+            <span
+              key={sub.subject_code}
+              className="inline-flex items-center rounded-md bg-violet-500/20 px-2 py-0.5 text-xs font-bold text-violet-300 border border-violet-500/30 font-mono shadow-xs"
+            >
+              {sub.subject_code}
+            </span>
+          ))
+        ) : (
+          <span className="font-mono text-xs font-bold text-violet-300">{(r.subject_code as string) || '—'}</span>
+        )}
+      </div>
+    ),
+  },
+  {
+    key: 'subject_name',
+    header: 'Enrolled Course(s)',
+    render: (_, r) => (
+      <div className="flex flex-col gap-1">
+        {r.enrolled_subjects && r.enrolled_subjects.length > 0 ? (
+          r.enrolled_subjects.map((sub) => (
+            <div key={sub.subject_code} className="text-xs font-semibold text-slate-100 flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-400 shrink-0" />
+              <span>{sub.subject_name}</span>
+            </div>
+          ))
+        ) : (
+          <span className="text-xs font-semibold text-slate-100">{(r.subject_name as string) || '—'}</span>
+        )}
+      </div>
+    ),
+  },
   {
     key: 'mobile',
     header: 'Mobile',
-    render: (v) => <span className="font-mono text-xs">{(v as string) || '—'}</span>,
+    render: (v) => <span className="font-mono text-xs text-slate-300">{(v as string) || '—'}</span>,
   },
-  { key: 'email', header: 'Email' },
+  { key: 'email', header: 'Email', className: 'text-slate-300 text-xs' },
   {
     key: 'status',
     header: 'Status',
@@ -92,12 +128,16 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
     return rows.filter((r) => {
       if (filters.status && r.status !== filters.status) return false
       if (filters.program && r.program !== filters.program) return false
-      if (
-        filters.subject &&
-        r.subject_code !== filters.subject &&
-        !r.subject_name.toLowerCase().includes(filters.subject.toLowerCase())
-      ) {
-        return false
+      if (filters.subject) {
+        const targetSub = filters.subject.toLowerCase()
+        const matchesCode = r.subject_code === filters.subject
+        const matchesName = r.subject_name.toLowerCase().includes(targetSub)
+        const matchesEnrolled = r.enrolled_subjects?.some(
+          (s) => s.subject_code === filters.subject || s.subject_name.toLowerCase().includes(targetSub)
+        )
+        if (!matchesCode && !matchesName && !matchesEnrolled) {
+          return false
+        }
       }
       if (filters.department && r.department_name && r.department_name !== filters.department) {
         return false
@@ -110,7 +150,10 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
         const matchSubCode = r.subject_code?.toLowerCase().includes(q)
         const matchSubName = r.subject_name?.toLowerCase().includes(q)
         const matchProgram = r.program?.toLowerCase().includes(q)
-        if (!matchName && !matchReg && !matchEmail && !matchSubCode && !matchSubName && !matchProgram) {
+        const matchEnrolledSubs = r.enrolled_subjects?.some(
+          (s) => s.subject_code.toLowerCase().includes(q) || s.subject_name.toLowerCase().includes(q)
+        )
+        if (!matchName && !matchReg && !matchEmail && !matchSubCode && !matchSubName && !matchProgram && !matchEnrolledSubs) {
           return false
         }
       }
@@ -121,7 +164,18 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
   const filterOptions = useMemo<FilterBarConfig>(() => {
     const baseRows = isStandalone ? ((studentListQuery.data?.rows ?? []) as ExtendedStudentRow[]) : rawRows
     const programs = [...new Set(baseRows.map((r) => r.program).filter(Boolean))]
-    const subjects = [...new Map(baseRows.map((r) => [r.subject_code, r.subject_name]))]
+
+    // Extract subjects across baseRows (including enrolled_subjects)
+    const subjectMap = new Map<string, string>()
+    baseRows.forEach((r) => {
+      if (r.enrolled_subjects && r.enrolled_subjects.length > 0) {
+        r.enrolled_subjects.forEach((s) => subjectMap.set(s.subject_code, s.subject_name))
+      } else if (r.subject_code && r.subject_name) {
+        subjectMap.set(r.subject_code, r.subject_name)
+      }
+    })
+
+    const subjects = [...subjectMap.entries()]
     const depts = [...new Set(baseRows.map((r) => r.department_name).filter((d): d is string => Boolean(d)))]
 
     return {
@@ -176,7 +230,7 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
         columns={STUDENT_COLS}
         rows={filteredRows}
         isLoading={isLoading}
-        rowKey={(r) => `${r.student_id}-${r.subject_code}`}
+        rowKey={(r) => r.register_no || r.student_id}
         onRowClick={(r) => setSelectedStudentId(r.student_id)}
         emptyMessage="No enrolled students found."
       />
@@ -190,4 +244,5 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
     </div>
   )
 }
+
 

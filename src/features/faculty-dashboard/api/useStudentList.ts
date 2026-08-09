@@ -14,6 +14,7 @@ export interface StudentListRow {
   subject_code: string
   subject_name: string
   department_name: string
+  enrolled_subjects?: Array<{ subject_code: string; subject_name: string; status?: string }>
   status: 'enrolled' | 'completed' | 'dropped'
 }
 
@@ -80,25 +81,55 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
       // Fetch all matching rows in single query
       query = query.range(0, 999)
 
-      const { data, error, count } = await query
+      const { data, error } = await query
 
       if (error) throw error
 
-      const rows: StudentListRow[] = (data ?? []).map((row, idx) => ({
-        sno: row.sno ?? idx + 1,
-        student_id: row.id,
-        student_name: row.student_name,
-        register_no: row.register_no,
-        program: row.program,
-        mobile: row.mobile_no,
-        email: row.email_id,
-        subject_code: row.subject_code,
-        subject_name: row.subject_name,
-        department_name: row.program,
-        status: (row.status as 'enrolled' | 'completed' | 'dropped') || 'enrolled',
+      const groupedMap = new Map<string, StudentListRow>()
+      ;(data ?? []).forEach((row) => {
+        const regNo = row.register_no?.trim() || row.id
+        if (!groupedMap.has(regNo)) {
+          groupedMap.set(regNo, {
+            sno: 0,
+            student_id: row.id,
+            student_name: row.student_name,
+            register_no: row.register_no,
+            program: row.program,
+            mobile: row.mobile_no,
+            email: row.email_id,
+            subject_code: row.subject_code,
+            subject_name: row.subject_name,
+            department_name: row.program,
+            enrolled_subjects: [
+              {
+                subject_code: row.subject_code,
+                subject_name: row.subject_name,
+                status: row.status,
+              },
+            ],
+            status: (row.status as 'enrolled' | 'completed' | 'dropped') || 'enrolled',
+          })
+        } else {
+          const existing = groupedMap.get(regNo)!
+          const subExists = existing.enrolled_subjects?.some((s) => s.subject_code === row.subject_code)
+          if (!subExists) {
+            existing.enrolled_subjects?.push({
+              subject_code: row.subject_code,
+              subject_name: row.subject_name,
+              status: row.status,
+            })
+            existing.subject_code += `, ${row.subject_code}`
+            existing.subject_name += `, ${row.subject_name}`
+          }
+        }
+      })
+
+      const rows = Array.from(groupedMap.values()).map((row, idx) => ({
+        ...row,
+        sno: idx + 1,
       }))
 
-      return { rows, total: count ?? 0 }
+      return { rows, total: rows.length }
     },
     placeholderData: (prev) => prev,
   })
