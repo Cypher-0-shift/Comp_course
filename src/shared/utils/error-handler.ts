@@ -26,6 +26,25 @@ export function handleUIError(error: unknown, context: string): string {
     return error.message
   }
 
+  // Handle Supabase Auth errors specifically (they are safe to display and should not be masked)
+  if (typeof error === 'object' && error !== null) {
+    const errObj = error as Record<string, unknown>
+    const name = errObj.name
+    const hasStatus = 'status' in errObj
+    const isAuthName =
+      typeof name === 'string' &&
+      (name.includes('AuthError') ||
+        name.includes('AuthApiError') ||
+        name.includes('AuthWeakPasswordError'))
+
+    if (hasStatus || isAuthName) {
+      const message = errObj.message
+      if (typeof message === 'string') {
+        return message
+      }
+    }
+  }
+
   // Handle Supabase / PostgREST errors specifically (they often contain `.code` or `.details`)
   if (typeof error === 'object' && error !== null && ('code' in error || 'details' in error)) {
     return 'A database or service operation failed. Please try again later.'

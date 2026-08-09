@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSupabase } from '@/shared/hooks/useSupabase'
+import { useAuth } from '@/shared/hooks/useAuth'
 import type { FilterOptions, PaginationState } from '@/shared/types'
 
 export interface FacultyListRow {
@@ -22,16 +23,13 @@ interface UseFacultyListParams {
 
 export function useFacultyList({ filters, search }: UseFacultyListParams) {
   const supabase = useSupabase()
+  const { role, empId } = useAuth()
 
   return useQuery({
-    queryKey: ['faculty-list', filters, search],
+    queryKey: ['faculty-list', filters, search, role, empId],
     staleTime: 3 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      const role = user?.app_metadata?.role || user?.user_metadata?.role
-      const empId = user?.app_metadata?.emp_id || user?.user_metadata?.emp_id
-
       let query = supabase
         .from('faculty_assignments')
         .select('*', { count: 'exact' })

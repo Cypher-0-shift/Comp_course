@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useStudentList, type StudentListRow } from '../api/useStudentList'
+import { useFacultyList } from '../api/useFacultyList'
 import { DataTable, type ColumnDef } from './DataTable'
 import { SearchInput } from './SearchInput'
 import { FilterBar, type FilterBarConfig } from './FilterBar'
@@ -62,6 +63,9 @@ export function StudentListTab() {
   const [selectedSubjectCode, setSelectedSubjectCode] = useState<string>('all')
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
 
+  // Fetch all assigned subjects for faculty dropdown
+  const { data: facultyData } = useFacultyList({ filters: {}, search: '' })
+
   // Fetch student dataset scoped to department for HOD/Dean
   const { data, isLoading } = useStudentList({
     filters,
@@ -75,16 +79,29 @@ export function StudentListTab() {
   // Extract unique assigned subjects for faculty dropdown
   const assignedSubjects = useMemo(() => {
     const map = new Map<string, { code: string; name: string; count: number }>()
+    
+    // 1. Pre-fill all assignments from faculty_assignments so we show subjects even with 0 students
+    if (facultyData?.rows) {
+      facultyData.rows.forEach((r) => {
+        if (!map.has(r.subject_code)) {
+          map.set(r.subject_code, { code: r.subject_code, name: r.subject_name, count: 0 })
+        }
+      })
+    }
+
+    // 2. Count matching enrolled students
     allRows.forEach((r) => {
-      if (!map.has(r.subject_code)) {
-        map.set(r.subject_code, { code: r.subject_code, name: r.subject_name, count: 1 })
-      } else {
-        const existing = map.get(r.subject_code)!
+      const existing = map.get(r.subject_code)
+      if (existing) {
         existing.count += 1
+      } else {
+        // Fallback for students enrolled in other subjects
+        map.set(r.subject_code, { code: r.subject_code, name: r.subject_name, count: 1 })
       }
     })
+    
     return Array.from(map.values())
-  }, [allRows])
+  }, [facultyData?.rows, allRows])
 
   // Filter rows based on selected subject dropdown selection
   const filteredRows = useMemo(() => {

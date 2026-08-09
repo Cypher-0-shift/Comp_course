@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSupabase } from '@/shared/hooks/useSupabase'
+import { useAuth } from '@/shared/hooks/useAuth'
 import type { FilterOptions, PaginationState } from '@/shared/types'
 
 export interface StudentListRow {
@@ -25,16 +26,13 @@ interface UseStudentListParams {
 
 export function useStudentList({ filters, search, departmentName }: UseStudentListParams) {
   const supabase = useSupabase()
+  const { role, empId } = useAuth()
 
   return useQuery({
-    queryKey: ['faculty-student-list', filters, search, departmentName],
+    queryKey: ['faculty-student-list', filters, search, departmentName, role, empId],
     staleTime: 3 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      const role = user?.app_metadata?.role || user?.user_metadata?.role
-      const empId = user?.app_metadata?.emp_id || user?.user_metadata?.emp_id
-
       let query = supabase
         .from('student_enrollments')
         .select('*', { count: 'exact' })

@@ -9,7 +9,8 @@ export function AnalyticsChartsSection() {
   const { data: studentData } = useStudentList({ filters: {}, search: '' })
 
   const totalDepartments = deptRows.length
-  const totalCourses = facultyData?.rows.length ?? 0
+  const uniqueSubjectsCount = new Set(facultyData?.rows.map(r => r.subject_code)).size
+  const totalCourses = uniqueSubjectsCount
   const totalStudents = studentData?.rows.length ?? 0
 
   // Calculate total students handled by assigned courses (students enrolled in faculty's active courses)
@@ -25,6 +26,23 @@ export function AnalyticsChartsSection() {
   }))
 
   const maxStudentCount = Math.max(...chartItems.map((i) => i.count), 1)
+
+  // Get unique assigned subjects list for display
+  const uniqueFacultySubjects = (() => {
+    if (!facultyData?.rows) return []
+    const map = new Map<string, { code: string; name: string; dept: string; students: number }>()
+    facultyData.rows.forEach((r) => {
+      if (!map.has(r.subject_code)) {
+        map.set(r.subject_code, {
+          code: r.subject_code,
+          name: r.subject_name,
+          dept: r.department_name,
+          students: r.students_registered,
+        })
+      }
+    })
+    return Array.from(map.values())
+  })()
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-12 mb-6">
@@ -140,6 +158,41 @@ export function AnalyticsChartsSection() {
                 <span>0 Students</span>
                 <span>Max Peak: {maxStudentCount} Students</span>
               </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Assigned Subjects Card */}
+      <div className="lg:col-span-12 rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md p-6 shadow-sm">
+        <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200/60">
+            <BookOpen className="h-4.5 w-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Your Assigned Subjects</h3>
+            <p className="text-xs text-slate-500">Compensatory courses mapped to your profile</p>
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {uniqueFacultySubjects.map((sub, idx) => (
+            <div key={idx} className="flex flex-col justify-between p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-50 transition shadow-2xs">
+              <div>
+                <span className="inline-block text-[10px] font-bold text-indigo-600 uppercase bg-indigo-50 border border-indigo-200/60 px-2 py-0.5 rounded-md mb-2">
+                  {sub.code}
+                </span>
+                <h4 className="text-xs font-bold text-slate-900 leading-snug">{sub.name}</h4>
+                <p className="text-[10px] text-slate-500 mt-1">{sub.dept}</p>
+              </div>
+              <div className="mt-3 pt-3 border-t border-slate-200/40 flex items-center justify-between text-[11px] text-slate-600">
+                <span>Enrolled Students:</span>
+                <span className="font-bold text-indigo-600 bg-indigo-50/80 border border-indigo-100 px-1.5 py-0.5 rounded-md">{sub.students}</span>
+              </div>
+            </div>
+          ))}
+          {uniqueFacultySubjects.length === 0 && (
+            <div className="col-span-full py-6 text-center text-xs text-slate-400 italic">
+              No assigned subjects found.
             </div>
           )}
         </div>
