@@ -12,7 +12,7 @@ import { UploadFABModal } from '@/features/faculty-dashboard/components/UploadFA
 
 export function AdminDashboard() {
   const { role } = useAuth()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-slate-900 selection:bg-violet-500 selection:text-white font-sans relative">
@@ -42,7 +42,6 @@ export function AdminDashboard() {
         {/* Left Collapsible Sidebar Navigation */}
         <AdminSidebar
           collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
         />
 
         {/* Main Content Viewport */}

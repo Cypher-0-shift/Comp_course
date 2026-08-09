@@ -1,14 +1,14 @@
-import { LayoutDashboard, Users, Upload, LogOut, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Users, Upload, LogOut, ShieldCheck } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { cn } from '@/shared/utils/cn'
 
 interface AdminSidebarProps {
   collapsed: boolean
-  onToggleCollapse: () => void
+  onToggleCollapse?: () => void
 }
 
-export function AdminSidebar({ collapsed, onToggleCollapse }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed }: AdminSidebarProps) {
   const { role, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -47,14 +47,6 @@ export function AdminSidebar({ collapsed, onToggleCollapse }: AdminSidebarProps)
         collapsed ? '-translate-x-full md:translate-x-0 md:w-16' : 'translate-x-0 w-64'
       )}
     >
-      {/* Collapse Toggle Button */}
-      <button
-        onClick={onToggleCollapse}
-        className="absolute -right-3 top-6 hidden md:flex h-6 w-6 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-slate-300 shadow-md transition hover:border-violet-500 hover:text-white cursor-pointer"
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
-      </button>
 
       {/* Sidebar Header Branding */}
       <div className={cn('flex items-center gap-3 px-4 py-5 border-b border-slate-800/80', collapsed && 'md:justify-center md:px-2')}>
