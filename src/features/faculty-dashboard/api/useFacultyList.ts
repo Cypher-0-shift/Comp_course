@@ -28,9 +28,17 @@ export function useFacultyList({ filters, search }: UseFacultyListParams) {
     staleTime: 3 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      const role = user?.app_metadata?.role || user?.user_metadata?.role
+      const empId = user?.app_metadata?.emp_id || user?.user_metadata?.emp_id
+
       let query = supabase
         .from('faculty_assignments')
         .select('*', { count: 'exact' })
+
+      if (role === 'faculty' && empId) {
+        query = query.eq('emp_id', empId)
+      }
 
       if (filters.department) {
         query = query.ilike('department', `%${filters.department}%`)

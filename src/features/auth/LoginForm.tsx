@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../../shared/hooks/useAuth'
-import { signIn, resendConfirmation } from '../../shared/hooks/useSupabase'
+import { signIn, resendConfirmation, signUp, getSupabaseClient } from '../../shared/hooks/useSupabase'
 import { toast } from 'sonner'
 import { cn } from '../../shared/utils/cn'
 import { handleUIError } from '@/shared/utils/error-handler'
@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Mail, Lock, Eye, EyeOff, UserCheck } from 'lucide-react'
 
 // =============================================
 // Zod Validation Schema
@@ -32,7 +32,21 @@ const loginSchema = z.object({
     .regex(/^[a-zA-Z0-9!@#$%^&*()_+=\-{}[\]:;"'<>,.?/`~|\\]+$/, 'Invalid characters in password'),
 })
 
+const onboardSchema = z.object({
+  empId: z.string().min(1, 'Employee ID is required').max(20, 'Employee ID too long'),
+  email: z.string().email('Invalid email format').max(255, 'Email too long'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(64, 'Password too long')
+    .regex(/^[a-zA-Z0-9!@#$%^&*()_+=\-{}[\]:;"'<>,.?/`~|\\]+$/, 'Invalid characters in password'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+})
+
 export type LoginFormData = z.infer<typeof loginSchema>
+export type OnboardFormData = z.infer<typeof onboardSchema>
 
 // =============================================
 // LoginForm Component
@@ -44,6 +58,7 @@ export function LoginForm() {
   const { redirectToDashboard, isLoading: authLoading } = useAuth()
 
   // State
+  const [activeTab, setActiveTab] = useState<'login' | 'onboard'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -51,6 +66,13 @@ export function LoginForm() {
   const [showResend, setShowResend] = useState(false)
   const [resendEmail, setResendEmail] = useState('')
   const [errors, setErrors] = useState<Partial<LoginFormData>>({})
+
+  // Onboard State
+  const [empId, setEmpId] = useState('')
+  const [onboardEmail, setOnboardEmail] = useState('')
+  const [onboardPassword, setOnboardPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [onboardErrors, setOnboardErrors] = useState<Partial<Record<keyof OnboardFormData | 'root', string>>>({})
 
   // Get redirect path from query params
   const redirectPath = searchParams.get('redirect') || null
@@ -84,6 +106,22 @@ export function LoginForm() {
       return false
     }
     setErrors({})
+    return true
+  }
+
+  const validateOnboardForm = (): boolean => {
+    const result = onboardSchema.safeParse({ empId, email: onboardEmail, password: onboardPassword, confirmPassword })
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof OnboardFormData, string>> = {}
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          fieldErrors[err.path[0] as keyof OnboardFormData] = err.message
+        }
+      })
+      setOnboardErrors(fieldErrors)
+      return false
+    }
+    setOnboardErrors({})
     return true
   }
 
@@ -160,6 +198,66 @@ export function LoginForm() {
     }
   }
 
+  const handleOnboardSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validateOnboardForm()) return
+
+    setIsSubmitting(true)
+
+    try {
+      const client = getSupabaseClient()
+      
+      // Query security definer RPC to verify the emp_id securely without admin keys
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: onboardingData, error: searchError } = await (client as any)
+        .rpc('verify_and_get_faculty_onboarding', {
+          p_emp_id: empId.toUpperCase().trim()
+        })
+
+      if (searchError) {
+        toast.error('Error verifying Employee ID: ' + searchError.message)
+        return
+      }
+
+      if (!onboardingData || onboardingData.length === 0) {
+        setOnboardErrors({ empId: 'Employee ID not found in assignments. Please contact the administrator.' })
+        toast.error('Onboarding failed: Employee ID not found.')
+        return
+      }
+
+      // Check if this emp_id is already onboarded by looking for users in auth or matching emails
+      const facultyName = onboardingData[0].faculty_name
+      const departmentName = onboardingData[0].department
+
+      const { data: signUpData, error: signUpError } = await signUp(onboardEmail, onboardPassword, {
+        role: 'faculty',
+        emp_id: empId.toUpperCase().trim(),
+        name: facultyName,
+        department_name: departmentName
+      })
+
+      if (signUpError) {
+        handleAuthError(signUpError)
+        return
+      }
+
+      if (signUpData.user) {
+        toast.success(`Welcome, ${facultyName}! Onboarding successful. Check your email for verification.`)
+        // Clear onboarding form
+        setEmpId('')
+        setOnboardEmail('')
+        setOnboardPassword('')
+        setConfirmPassword('')
+        setActiveTab('login')
+      }
+    } catch (err) {
+      toast.error('An unexpected error occurred during onboarding: ' + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleResendConfirmation = async () => {
     if (!resendEmail) return
 
@@ -195,126 +293,274 @@ export function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4">
-            <svg className="w-7 h-7 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto w-24 h-24 flex items-center justify-center mb-2">
+            <img src="/8.-SRM-Logo-300x300.webp" alt="SRM Logo" className="h-full w-full object-contain" />
           </div>
-          <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard</CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            {activeTab === 'login' ? 'Sign In' : 'Onboard Faculty'}
+          </CardTitle>
+          <CardDescription>
+            {activeTab === 'login'
+              ? 'Enter your credentials to access the dashboard'
+              : 'Enter details to map your assigned courses & onboard'}
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email Field */}
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  placeholder="you@college.edu"
-                  className={cn('pl-9', errors.email && 'border-red-500 focus-visible:ring-red-500')}
-                  disabled={isSubmitting || authLoading}
-                  autoComplete="email"
-                  aria-invalid={errors.email ? 'true' : 'false'}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
-                />
-              </div>
-              {errors.email && (
-                <p id="email-error" className="text-sm text-red-500" role="alert">
-                  {errors.email}
-                </p>
+          {/* Tab Switcher */}
+          <div className="flex border-b mb-6 border-slate-200">
+            <button
+              type="button"
+              onClick={() => { setActiveTab('login'); setErrors({}); setOnboardErrors({}); }}
+              className={cn(
+                'flex-1 pb-3 text-sm font-semibold text-center border-b-2 transition-all cursor-pointer',
+                activeTab === 'login'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-slate-400 hover:text-slate-600'
               )}
-            </div>
-
-            {/* Password Field */}
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={handlePasswordChange}
-                  placeholder="••••••••"
-                  className={cn('pl-9 pr-10', errors.password && 'border-red-500 focus-visible:ring-red-500')}
-                  disabled={isSubmitting || authLoading}
-                  autoComplete="current-password"
-                  aria-invalid={errors.password ? 'true' : 'false'}
-                  aria-describedby={errors.password ? 'password-error' : undefined}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {errors.password && (
-                <p id="password-error" className="text-sm text-red-500" role="alert">
-                  {errors.password}
-                </p>
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => { setActiveTab('onboard'); setErrors({}); setOnboardErrors({}); }}
+              className={cn(
+                'flex-1 pb-3 text-sm font-semibold text-center border-b-2 transition-all cursor-pointer',
+                activeTab === 'onboard'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-slate-400 hover:text-slate-600'
               )}
-            </div>
+            >
+              Onboard Faculty
+            </button>
+          </div>
 
-            {/* Email Not Confirmed Alert */}
-            {showResend && (
-              <Alert variant="destructive" className="flex gap-2">
-                <AlertDescription className="flex-1 text-sm">
-                  Email not confirmed.{' '}
+          {activeTab === 'login' ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    placeholder="you@college.edu"
+                    className={cn('pl-9', errors.email && 'border-red-500 focus-visible:ring-red-500')}
+                    disabled={isSubmitting || authLoading}
+                    autoComplete="email"
+                    aria-invalid={errors.email ? 'true' : 'false'}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                  />
+                </div>
+                {errors.email && (
+                  <p id="email-error" className="text-sm text-red-500" role="alert">
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={handlePasswordChange}
+                    placeholder="••••••••"
+                    className={cn('pl-9 pr-10', errors.password && 'border-red-500 focus-visible:ring-red-500')}
+                    disabled={isSubmitting || authLoading}
+                    autoComplete="current-password"
+                    aria-invalid={errors.password ? 'true' : 'false'}
+                    aria-describedby={errors.password ? 'password-error' : undefined}
+                  />
                   <button
                     type="button"
-                    onClick={handleResendConfirmation}
-                    className="underline hover:no-underline text-sm"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={-1}
                   >
-                    Resend confirmation email
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
-                </AlertDescription>
-              </Alert>
-            )}
+                </div>
+                {errors.password && (
+                  <p id="password-error" className="text-sm text-red-500" role="alert">
+                    {errors.password}
+                  </p>
+                )}
+              </div>
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting || authLoading}
-              size="default"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
+              {/* Email Not Confirmed Alert */}
+              {showResend && (
+                <Alert variant="destructive" className="flex gap-2">
+                  <AlertDescription className="flex-1 text-sm">
+                    Email not confirmed.{' '}
+                    <button
+                      type="button"
+                      onClick={handleResendConfirmation}
+                      className="underline hover:no-underline text-sm"
+                    >
+                      Resend confirmation email
+                    </button>
+                  </AlertDescription>
+                </Alert>
               )}
-            </Button>
 
-
-
-            {/* Forgot Password Link */}
-            <p className="text-center text-sm text-muted-foreground pt-2">
-              <a
-                href="#"
-                className="underline hover:no-underline"
-                onClick={(e) => {
-                  e.preventDefault()
-                  toast.info('Contact your administrator for password reset')
-                }}
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white"
+                disabled={isSubmitting || authLoading}
+                size="default"
               >
-                Forgot password?
-              </a>
-            </p>
-          </form>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+
+              {/* Forgot Password Link */}
+              <p className="text-center text-sm text-muted-foreground pt-2">
+                <a
+                  href="#"
+                  className="underline hover:no-underline"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    toast.info('Contact your administrator for password reset')
+                  }}
+                >
+                  Forgot password?
+                </a>
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={handleOnboardSubmit} className="space-y-4">
+              {/* Employee ID Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="empId">Employee ID</Label>
+                <div className="relative">
+                  <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="empId"
+                    type="text"
+                    value={empId}
+                    onChange={(e) => setEmpId(e.target.value)}
+                    placeholder="e.g. T947"
+                    className={cn('pl-9 uppercase', onboardErrors.empId && 'border-red-500 focus-visible:ring-red-500')}
+                    disabled={isSubmitting}
+                    autoComplete="off"
+                  />
+                </div>
+                {onboardErrors.empId && (
+                  <p className="text-sm text-red-500" role="alert">
+                    {onboardErrors.empId}
+                  </p>
+                )}
+              </div>
+
+              {/* Email Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="onboardEmail">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="onboardEmail"
+                    type="email"
+                    value={onboardEmail}
+                    onChange={(e) => setOnboardEmail(e.target.value)}
+                    placeholder="you@college.edu"
+                    className={cn('pl-9', onboardErrors.email && 'border-red-500 focus-visible:ring-red-500')}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                {onboardErrors.email && (
+                  <p className="text-sm text-red-500" role="alert">
+                    {onboardErrors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="onboardPassword">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="onboardPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={onboardPassword}
+                    onChange={(e) => setOnboardPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className={cn('pl-9 pr-10', onboardErrors.password && 'border-red-500 focus-visible:ring-red-500')}
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {onboardErrors.password && (
+                  <p className="text-sm text-red-500" role="alert">
+                    {onboardErrors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className={cn('pl-9', onboardErrors.confirmPassword && 'border-red-500 focus-visible:ring-red-500')}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                {onboardErrors.confirmPassword && (
+                  <p className="text-sm text-red-500" role="alert">
+                    {onboardErrors.confirmPassword}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit Onboard Button */}
+              <Button
+                type="submit"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white"
+                disabled={isSubmitting}
+                size="default"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Onboarding Faculty...
+                  </>
+                ) : (
+                  'Complete Onboarding'
+                )}
+              </Button>
+            </form>
+          )}
         </CardContent>
 
         <CardFooter className="flex justify-center text-sm text-muted-foreground">

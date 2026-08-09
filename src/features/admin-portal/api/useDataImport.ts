@@ -66,6 +66,7 @@ export function useDataImport() {
 
       // Layer 2 Verification: Try RPC first
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data, error } = await (supabase.rpc as any)('import_data_with_verification', {
           p_passcode: passcode,
           p_import_type: importType,

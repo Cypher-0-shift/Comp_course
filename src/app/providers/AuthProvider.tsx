@@ -23,6 +23,7 @@ export interface AuthContextType {
   role: UserRole | null
   departmentId: string | null
   departmentName: string | null
+  empId: string | null
   isLoading: boolean
   signOut: () => Promise<void>
   redirectToDashboard: (role: UserRole) => void
@@ -164,15 +165,16 @@ export function extractUserMetadata(user: User | null): {
   role: UserRole | null
   departmentId: string | null
   departmentName: string | null
+  empId: string | null
 } {
-  if (!user) return { role: null, departmentId: null, departmentName: null }
+  if (!user) return { role: null, departmentId: null, departmentName: null, empId: null }
 
   const appMetadata = user.app_metadata as
-    | { role?: UserRole; department_id?: string; department_name?: string; department?: string }
+    | { role?: UserRole; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
     | undefined
 
   const userMetadata = user.user_metadata as
-    | { role?: UserRole; department_id?: string; department_name?: string; department?: string }
+    | { role?: UserRole; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
     | undefined
 
   const deptName =
@@ -187,10 +189,18 @@ export function extractUserMetadata(user: User | null): {
     userMetadata?.department_id ??
     null
 
+  const empId =
+    appMetadata?.emp_id ??
+    appMetadata?.empId ??
+    userMetadata?.emp_id ??
+    userMetadata?.empId ??
+    null
+
   return {
     role: appMetadata?.role ?? userMetadata?.role ?? null,
     departmentId: deptId,
     departmentName: deptName,
+    empId,
   }
 }
 
@@ -224,7 +234,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [session])
 
   // Computed values
-  const { role, departmentId, departmentName } = extractUserMetadata(user)
+  const { role, departmentId, departmentName, empId } = extractUserMetadata(user)
 
   // =============================================
   // Activity Tracking (for idle timeout)
@@ -488,6 +498,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     role,
     departmentId,
     departmentName,
+    empId,
     isLoading,
     signOut: handleSignOut,
     redirectToDashboard,

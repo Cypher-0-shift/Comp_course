@@ -31,9 +31,29 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
     staleTime: 3 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      const role = user?.app_metadata?.role || user?.user_metadata?.role
+      const empId = user?.app_metadata?.emp_id || user?.user_metadata?.emp_id
+
       let query = supabase
         .from('student_enrollments')
         .select('*', { count: 'exact' })
+
+      if (role === 'faculty' && empId) {
+        const { data: assignments, error: assignError } = await supabase
+          .from('faculty_assignments')
+          .select('subject_code')
+          .eq('emp_id', empId)
+
+        if (assignError) throw assignError
+
+        const subjectCodes = assignments?.map((a) => a.subject_code) || []
+        if (subjectCodes.length > 0) {
+          query = query.in('subject_code', subjectCodes)
+        } else {
+          return { rows: [], total: 0 }
+        }
+      }
 
       if (filters.status) {
         query = query.eq('status', filters.status)
