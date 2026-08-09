@@ -75,12 +75,16 @@ export async function signUp(
   metadata?: Record<string, unknown>
 ) {
   const client = getSupabaseClient()
+  const redirectUrl = import.meta.env.VITE_SITE_URL 
+    ? `${import.meta.env.VITE_SITE_URL}/auth/callback`
+    : `${window.location.origin}/auth/callback`
+
   const { data, error } = await client.auth.signUp({
     email,
     password,
     options: {
       data: metadata,
-      emailRedirectTo: `${window.location.origin}/auth/callback`,
+      emailRedirectTo: redirectUrl,
     },
   })
   return { data, error }

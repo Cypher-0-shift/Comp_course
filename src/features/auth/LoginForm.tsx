@@ -181,7 +181,10 @@ export function LoginForm() {
       }
 
       if (data.user) {
-        const { role } = data.user.app_metadata as { role?: string }
+        const appMetadata = data.user.app_metadata as { role?: string }
+        const userMetadata = data.user.user_metadata as { role?: string }
+        const role = appMetadata?.role ?? userMetadata?.role
+        
         if (role) {
           // Use redirect from query params or role-based default
           if (redirectPath) {
@@ -189,6 +192,8 @@ export function LoginForm() {
           } else {
             redirectToDashboard(role as 'student' | 'faculty' | 'hod' | 'dean')
           }
+        } else {
+          toast.error("User role not configured. Please contact the administrator.")
         }
       }
     } catch (err) {
