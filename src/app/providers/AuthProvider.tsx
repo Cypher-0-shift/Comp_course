@@ -173,31 +173,22 @@ export function extractUserMetadata(user: User | null): {
     | { role?: UserRole; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
     | undefined
 
-  const userMetadata = user.user_metadata as
-    | { role?: UserRole; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
-    | undefined
-
   const deptName =
     appMetadata?.department_name ??
     appMetadata?.department ??
-    userMetadata?.department_name ??
-    userMetadata?.department ??
     null
 
   const deptId =
     appMetadata?.department_id ??
-    userMetadata?.department_id ??
     null
 
   const empId =
     appMetadata?.emp_id ??
     appMetadata?.empId ??
-    userMetadata?.emp_id ??
-    userMetadata?.empId ??
     null
 
   return {
-    role: appMetadata?.role ?? userMetadata?.role ?? null,
+    role: appMetadata?.role ?? null,
     departmentId: deptId,
     departmentName: deptName,
     empId,

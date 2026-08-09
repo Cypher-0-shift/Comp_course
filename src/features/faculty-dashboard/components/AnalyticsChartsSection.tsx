@@ -176,17 +176,13 @@ export function AnalyticsChartsSection() {
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {uniqueFacultySubjects.map((sub, idx) => (
-            <div key={idx} className="flex flex-col justify-between p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-50 transition shadow-2xs">
+            <div key={idx} className="p-4 rounded-xl border border-slate-200/60 bg-slate-50/50 hover:bg-slate-50 transition shadow-2xs">
               <div>
                 <span className="inline-block text-[10px] font-bold text-indigo-600 uppercase bg-indigo-50 border border-indigo-200/60 px-2 py-0.5 rounded-md mb-2">
                   {sub.code}
                 </span>
                 <h4 className="text-xs font-bold text-slate-900 leading-snug">{sub.name}</h4>
                 <p className="text-[10px] text-slate-500 mt-1">{sub.dept}</p>
-              </div>
-              <div className="mt-3 pt-3 border-t border-slate-200/40 flex items-center justify-between text-[11px] text-slate-600">
-                <span>Enrolled Students:</span>
-                <span className="font-bold text-indigo-600 bg-indigo-50/80 border border-indigo-100 px-1.5 py-0.5 rounded-md">{sub.students}</span>
               </div>
             </div>
           ))}
