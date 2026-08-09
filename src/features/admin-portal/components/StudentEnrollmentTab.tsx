@@ -121,7 +121,7 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
       rows = rows.filter((r) => {
         const prog = r.program?.toLowerCase() ?? ''
         const dept = r.department_name?.toLowerCase() ?? ''
-        return prog.includes(scopeLower) || dept.includes(scopeLower)
+        return prog === scopeLower || dept === scopeLower
       })
     }
 

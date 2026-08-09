@@ -23,10 +23,10 @@ interface UseFacultyListParams {
 
 export function useFacultyList({ filters, search }: UseFacultyListParams) {
   const supabase = useSupabase()
-  const { role, empId } = useAuth()
+  const { role, empId, departmentName } = useAuth()
 
   return useQuery({
-    queryKey: ['faculty-list', filters, search, role, empId],
+    queryKey: ['faculty-list', filters, search, role, empId, departmentName],
     staleTime: 3 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
@@ -36,6 +36,8 @@ export function useFacultyList({ filters, search }: UseFacultyListParams) {
 
       if (role === 'faculty' && empId) {
         query = query.eq('emp_id', empId)
+      } else if (role === 'hod' && departmentName) {
+        query = query.ilike('department', `%${departmentName}%`)
       }
 
       if (filters.department) {

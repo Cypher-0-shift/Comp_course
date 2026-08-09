@@ -2,8 +2,11 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDepartmentOverview, type DepartmentOverviewRow } from '../api/useDepartmentOverview'
 import { useFacultyList } from '@/features/faculty-dashboard/api/useFacultyList'
+import { useStudentList } from '@/features/faculty-dashboard/api/useStudentList'
+import { useAuth } from '@/shared/hooks/useAuth'
 import { DataTable, type ColumnDef } from '@/features/faculty-dashboard/components/DataTable'
-import { Users, ExternalLink, Building2, BookOpen, TrendingUp, BarChart3, GraduationCap } from 'lucide-react'
+import { StudentEnrollmentTab } from './StudentEnrollmentTab'
+import { Users, ExternalLink, Building2, BookOpen, TrendingUp, BarChart3, GraduationCap, ShieldCheck } from 'lucide-react'
 
 const COLUMNS: ColumnDef<DepartmentOverviewRow>[] = [
   { key: 'sno', header: '#', className: 'w-12 text-slate-400 font-mono text-xs' },
@@ -37,15 +40,24 @@ const COLUMNS: ColumnDef<DepartmentOverviewRow>[] = [
 
 export function DepartmentOverview() {
   const navigate = useNavigate()
+  const { role, departmentName } = useAuth()
   const { data: rows = [], isLoading } = useDepartmentOverview()
   const { data: facultyData } = useFacultyList({ filters: {}, search: '' })
+  const { data: studentData } = useStudentList({
+    filters: {},
+    search: '',
+    departmentName: role === 'hod' ? departmentName : null,
+  })
 
+  const isHod = role === 'hod'
   const totalDepartments = rows.length
   const totalFacultyCourses = facultyData?.rows.length ?? 0
+  const totalHodStudents = studentData?.rows.length ?? 0
 
   const totalStudents = useMemo(() => {
+    if (isHod) return totalHodStudents
     return rows.reduce((sum, row) => sum + row.students_registered, 0)
-  }, [rows])
+  }, [isHod, totalHodStudents, rows])
 
   // Chart preparation
   const chartItems = useMemo(() => {
@@ -70,18 +82,22 @@ export function DepartmentOverview() {
           <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-violet-500 animate-pulse" />
-              Executive Metrics
+              {isHod ? 'Department Analytics' : 'Executive Metrics'}
             </h2>
-            <span className="text-xs text-slate-500 font-medium">Live Institutional Data</span>
+            <span className="text-xs text-slate-500 font-medium">Live Departmental Data</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3.5 flex-1">
-            {/* Metric 1: Total Academic Departments */}
+            {/* Metric 1 */}
             <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md p-5 transition-all duration-300 hover:border-violet-300/80 hover:shadow-md shadow-xs">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Departments</p>
-                  <h3 className="mt-1 text-2xl font-extrabold text-slate-900 tracking-tight">{totalDepartments}</h3>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {isHod ? 'Assigned Department' : 'Total Departments'}
+                  </p>
+                  <h3 className="mt-1 text-lg font-extrabold text-slate-900 tracking-tight truncate max-w-[220px]">
+                    {isHod ? (departmentName ? (departmentName.split('-')[1] || departmentName) : 'CSE') : totalDepartments}
+                  </h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 border border-violet-200/60 transition-transform duration-200 group-hover:scale-110">
                   <Building2 className="h-5 w-5" />
@@ -89,15 +105,17 @@ export function DepartmentOverview() {
               </div>
               <div className="mt-3 flex items-center gap-2 text-[11px] text-violet-600 font-medium">
                 <TrendingUp className="h-3.5 w-3.5" />
-                <span>Active University Faculties</span>
+                <span className="truncate">{isHod ? (departmentName || 'Computer Science & Eng.') : 'Active University Faculties'}</span>
               </div>
             </div>
 
-            {/* Metric 2: Total Registered Students */}
+            {/* Metric 2 */}
             <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md p-5 transition-all duration-300 hover:border-violet-300/80 hover:shadow-md shadow-xs">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Enrolled Students</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {isHod ? 'Department Enrolled Students' : 'Total Enrolled Students'}
+                  </p>
                   <h3 className="mt-1 text-2xl font-extrabold text-slate-900 tracking-tight">{totalStudents}</h3>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60 transition-transform duration-200 group-hover:scale-110">
@@ -105,12 +123,14 @@ export function DepartmentOverview() {
                 </div>
               </div>
               <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-500 font-medium">
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-700 border border-slate-200">Across {totalDepartments} Depts</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-700 border border-slate-200">
+                  {isHod ? 'Department Scope' : `Across ${totalDepartments} Depts`}
+                </span>
                 <span>Compensatory Roster</span>
               </div>
             </div>
 
-            {/* Metric 3: Active Faculty Assignments */}
+            {/* Metric 3 */}
             <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md p-5 transition-all duration-300 hover:border-violet-300/80 hover:shadow-md shadow-xs">
               <div className="flex items-start justify-between">
                 <div>
@@ -129,21 +149,50 @@ export function DepartmentOverview() {
           </div>
         </div>
 
-        {/* Right Side: Responsive Department Bar Chart */}
+        {/* Right Side: Responsive Department Bar Chart or HOD Overview Card */}
         <div className="lg:col-span-7 flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Department Analytics</h3>
-              <p className="text-xs text-slate-500">Student enrollment distribution per department</p>
+              <h3 className="text-sm font-bold text-slate-900">
+                {isHod ? 'Department Status Summary' : 'Department Analytics'}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {isHod ? 'HOD Scope — Computer Science and Engineering' : 'Student enrollment distribution per department'}
+              </p>
             </div>
             <div className="flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-1 text-xs font-semibold text-violet-600">
               <BarChart3 className="h-4 w-4" />
-              <span>Enrollment Distribution</span>
+              <span>{isHod ? 'Department Active' : 'Enrollment Distribution'}</span>
             </div>
           </div>
 
           <div className="flex-1 pt-4 pb-1 flex flex-col justify-end overflow-hidden min-h-[220px]">
-            {chartItems.length === 0 ? (
+            {isHod ? (
+              <div className="flex flex-col justify-between h-full p-4 rounded-xl bg-gradient-to-br from-violet-50/50 to-indigo-50/30 border border-violet-100/80">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-white shadow-md">
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900">{departmentName || 'Computer Science & Engineering'}</h4>
+                    <p className="text-xs text-slate-500">Authorized HOD Scoped View</p>
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
+                  <div className="rounded-lg bg-white p-3 border border-slate-200/80 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold">Total Students</span>
+                    <p className="text-lg font-bold text-slate-900">{totalHodStudents}</p>
+                  </div>
+                  <div className="rounded-lg bg-white p-3 border border-slate-200/80 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold">Faculty Assigned</span>
+                    <p className="text-lg font-bold text-violet-600">{totalFacultyCourses}</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-[11px] text-slate-500 italic">
+                  Showing deduplicated student enrollment roster for your department only.
+                </p>
+              </div>
+            ) : chartItems.length === 0 ? (
               <div className="flex h-full items-center justify-center text-xs text-slate-400 italic">
                 Loading department analytics chart data...
               </div>
@@ -178,29 +227,52 @@ export function DepartmentOverview() {
         </div>
       </div>
 
-      {/* Main Department Overview Data Directory */}
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 border border-violet-200/60">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Department Directory</h2>
-              <p className="text-xs text-slate-500">Click any department row below to view assigned faculty members and enrolled students</p>
+      {/* Main Content Section: HOD sees Student Directory directly; Dean sees Department Directory Table */}
+      {isHod ? (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 border border-violet-200/60">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">
+                  {departmentName || 'Computer Science and Engineering'} Student Directory
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Enrolled students in your department (bundled deduplicated view)
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <DataTable<DepartmentOverviewRow>
-          columns={COLUMNS}
-          rows={rows}
-          isLoading={isLoading}
-          rowKey={(r) => r.department_id}
-          onRowClick={(r) => navigate(`/admin/departments/${r.department_id}`)}
-          emptyMessage="No departments found."
-        />
-      </section>
+          <StudentEnrollmentTab />
+        </section>
+      ) : (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 border border-violet-200/60">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Department Directory</h2>
+                <p className="text-xs text-slate-500">Click any department row below to view assigned faculty members and enrolled students</p>
+              </div>
+            </div>
+          </div>
+
+          <DataTable<DepartmentOverviewRow>
+            columns={COLUMNS}
+            rows={rows}
+            isLoading={isLoading}
+            rowKey={(r) => r.department_id}
+            onRowClick={(r) => navigate(`/admin/departments/${r.department_id}`)}
+            emptyMessage="No departments found."
+          />
+        </section>
+      )}
     </div>
   )
 }
+

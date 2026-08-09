@@ -68,7 +68,7 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
 
       const activeDept = filters.department || departmentName
       if (activeDept) {
-        query = query.ilike('program', `%${activeDept}%`)
+        query = query.eq('program', activeDept)
       }
 
       if (search.trim()) {

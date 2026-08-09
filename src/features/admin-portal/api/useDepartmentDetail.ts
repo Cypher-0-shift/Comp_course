@@ -158,7 +158,7 @@ export function useDepartmentDetail(departmentId: string | null) {
 
       let query = supabase.from('student_enrollments').select('*')
       if (dept?.department_name) {
-        query = query.ilike('program', `%${dept.department_name}%`)
+        query = query.eq('program', dept.department_name)
       }
 
       const { data, error } = await query

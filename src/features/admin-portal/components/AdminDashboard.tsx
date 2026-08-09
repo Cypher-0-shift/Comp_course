@@ -11,7 +11,7 @@ import { StudentEnrollmentTab } from './StudentEnrollmentTab'
 import { UploadFABModal } from '@/features/faculty-dashboard/components/UploadFABModal'
 
 export function AdminDashboard() {
-  const { role } = useAuth()
+  const { role, departmentName } = useAuth()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
@@ -52,9 +52,11 @@ export function AdminDashboard() {
                 <section>
                   <div className="mb-5 flex items-center justify-between">
                     <div>
-                      <h1 className="text-lg font-bold text-slate-900">Institutional Overview</h1>
+                      <h1 className="text-lg font-bold text-slate-900">
+                        {role === 'hod' ? `${departmentName || 'Department'} Dashboard` : 'Institutional Overview'}
+                      </h1>
                       <p className="text-xs text-slate-500">
-                        {role === 'hod' ? 'Departmental analytics and enrolled student list' : 'All university departments — full executive visibility'}
+                        {role === 'hod' ? 'Departmental analytics & enrolled student directory' : 'All university departments — full executive visibility'}
                       </p>
                     </div>
                   </div>

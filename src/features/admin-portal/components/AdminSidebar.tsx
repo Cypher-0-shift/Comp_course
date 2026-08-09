@@ -18,7 +18,7 @@ export function AdminSidebar({ collapsed }: AdminSidebarProps) {
   const navItems = [
     {
       path: '/admin',
-      label: 'Department Overview',
+      label: role === 'hod' ? 'Department Dashboard' : 'Department Overview',
       shortLabel: 'Overview',
       icon: LayoutDashboard,
       badge: 'Main',
