@@ -1,18 +1,38 @@
 import { useState } from 'react'
 import { FileUp, Clock, CheckCircle2, XCircle, ChevronRight, Download } from 'lucide-react'
 
-// Mock Data
-const MOCK_BATCHES = [
-  { id: 'b1', fileName: 'Fall2023_Enrollments.csv', date: '2023-10-25', status: 'awaiting_approval', count: 45, type: 'new_enrollment' },
-  { id: 'b2', fileName: 'Spring2024_Students.csv', date: '2023-10-24', status: 'completed', count: 120, type: 'new_student' },
-  { id: 'b3', fileName: 'CS301_Updates.xlsx', date: '2023-10-20', status: 'failed', count: 12, type: 'new_course' },
-]
+import { useQuery } from '@tanstack/react-query'
+import { useSupabase } from '@/shared/hooks/useSupabase'
 
 export function ApprovalsQueue({ role }: { role: 'faculty' | 'admin' | 'hod' | 'dean' }) {
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending')
+  const supabase = useSupabase()
 
-  const pendingBatches = MOCK_BATCHES.filter(b => b.status === 'awaiting_approval' || b.status === 'processing')
-  const historyBatches = MOCK_BATCHES.filter(b => b.status === 'completed' || b.status === 'failed' || b.status === 'partially_applied')
+  const { data: batches = [] } = useQuery({
+    queryKey: ['approvals-queue-batches', role],
+    staleTime: 3 * 60 * 1000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('student_enrollments')
+        .select('subject_code, department_name, status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (!data || data.length === 0) return []
+
+      return data.map((r, i) => ({
+        id: `batch-${i}`,
+        fileName: `${r.subject_code || 'ENROLLMENT'}_List.csv`,
+        date: new Date(r.created_at || Date.now()).toISOString().split('T')[0],
+        status: r.status === 'enrolled' ? 'completed' : r.status === 'dropped' ? 'failed' : 'awaiting_approval',
+        count: 1,
+        type: 'enrollment_update',
+      }))
+    },
+  })
+
+  const pendingBatches = batches.filter(b => b.status === 'awaiting_approval' || b.status === 'processing')
+  const historyBatches = batches.filter(b => b.status === 'completed' || b.status === 'failed' || b.status === 'partially_applied')
 
   const displayBatches = activeTab === 'pending' ? pendingBatches : historyBatches
 

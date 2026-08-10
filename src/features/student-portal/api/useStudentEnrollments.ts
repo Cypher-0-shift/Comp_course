@@ -21,7 +21,8 @@ export function useStudentEnrollments() {
     queryFn: getStudentEnrollments,
     // Only run when user is authenticated
     enabled: Boolean(user?.id),
-    // Courses: use default 5 min stale time from global config
+    // Phase 1 Architecture: Aggressive caching (15 minutes) for enrollments to prevent layout shifts
+    staleTime: 15 * 60 * 1000,
     // Default to empty array so components don't need null checks
     placeholderData: [],
   })

@@ -53,10 +53,9 @@ export function SearchInput({
         onChange={handleChange}
         placeholder={placeholder}
         className={cn(
-          'h-9 w-full rounded-lg border border-white/10 bg-white/5 pl-9 pr-8',
-          'text-sm text-slate-200 placeholder:text-slate-500',
-          'outline-none ring-0 transition',
-          'focus:border-indigo-400/50 focus:bg-white/10 focus:ring-1 focus:ring-indigo-400/30'
+          'h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-8 py-2',
+          'text-sm text-[#001941] placeholder:text-slate-400',
+          'focus:outline-none focus:ring-2 focus:ring-[#001941] focus:border-transparent transition-shadow'
         )}
       />
       {local && (

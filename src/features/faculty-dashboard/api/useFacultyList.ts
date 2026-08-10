@@ -19,14 +19,15 @@ interface UseFacultyListParams {
   filters: FilterOptions
   search: string
   pagination?: Pick<PaginationState, 'page' | 'pageSize'>
+  crossDept?: boolean
 }
 
-export function useFacultyList({ filters, search }: UseFacultyListParams) {
+export function useFacultyList({ filters, search, crossDept }: UseFacultyListParams) {
   const supabase = useSupabase()
   const { role, empId } = useAuth()
 
   return useQuery({
-    queryKey: ['faculty-list', filters, search, role, empId],
+    queryKey: ['faculty-list', filters, search, role, empId, crossDept],
     staleTime: 3 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
@@ -34,7 +35,7 @@ export function useFacultyList({ filters, search }: UseFacultyListParams) {
         .from('faculty_assignments')
         .select('*', { count: 'exact' })
 
-      if (role === 'faculty' && empId) {
+      if (!crossDept && role === 'faculty' && empId) {
         query = query.eq('emp_id', empId)
       }
 
@@ -56,23 +57,49 @@ export function useFacultyList({ filters, search }: UseFacultyListParams) {
       // Fetch all matching rows in single query
       query = query.range(0, 999)
 
-      const { data, error, count } = await query
+      const { data, error } = await query
 
       if (error) throw error
 
-      const rows: FacultyListRow[] = (data ?? []).map((row, idx) => ({
-        sno: row.sno ?? idx + 1,
-        subject_id: row.id,
-        subject_code: row.subject_code,
-        subject_name: row.subject_name,
-        students_registered: row.students_registered ?? 0,
-        faculty_name: row.faculty_name,
-        department_name: row.department,
-        emp_id: row.emp_id,
-        mobile: row.mobile_number,
+      // Group / deduplicate by faculty member (emp_id or faculty_name)
+      const facultyMap = new Map<string, FacultyListRow>()
+
+      ;(data ?? []).forEach((row) => {
+        const key = (row.emp_id || row.faculty_name || '').trim().toLowerCase()
+        if (!key) return
+
+        if (!facultyMap.has(key)) {
+          facultyMap.set(key, {
+            sno: 0,
+            subject_id: row.id,
+            subject_code: row.subject_code || '',
+            subject_name: row.subject_name || '',
+            students_registered: row.students_registered ?? 0,
+            faculty_name: row.faculty_name,
+            department_name: row.department,
+            emp_id: row.emp_id,
+            mobile: row.mobile_number,
+          })
+        } else {
+          const existing = facultyMap.get(key)!
+          if (row.subject_code) {
+            existing.subject_code = existing.subject_code
+              ? `${existing.subject_code} | ${row.subject_code}`
+              : row.subject_code
+            existing.subject_name = existing.subject_name
+              ? `${existing.subject_name} | ${row.subject_name || '—'}`
+              : row.subject_name || '—'
+          }
+          existing.students_registered += row.students_registered ?? 0
+        }
+      })
+
+      const rows: FacultyListRow[] = Array.from(facultyMap.values()).map((row, idx) => ({
+        ...row,
+        sno: idx + 1,
       }))
 
-      return { rows, total: count ?? 0 }
+      return { rows, total: rows.length }
     },
     placeholderData: (prev) => prev,
   })

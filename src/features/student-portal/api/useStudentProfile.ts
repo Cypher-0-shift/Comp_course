@@ -21,7 +21,7 @@ export function useStudentProfile() {
     queryFn: getStudentProfile,
     // Only run when user is authenticated
     enabled: Boolean(user?.id),
-    // Profile data: treat as fresh for 10 minutes (override global 5 min)
-    staleTime: 10 * 60 * 1000,
+    // Phase 1 Architecture: Aggressive caching (1 hour) for non-volatile profile data
+    staleTime: 60 * 60 * 1000,
   })
 }

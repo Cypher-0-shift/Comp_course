@@ -241,14 +241,14 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
             /* Dense Table Layout */
             <div className="table-container-safe rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 shadow-xl">
               <table className="w-full text-sm text-left text-slate-200">
-                <thead className="text-xs text-indigo-300 uppercase bg-slate-950/90 border-b border-slate-800 font-bold tracking-wider">
+                <thead className="text-xs text-indigo-300 uppercase bg-slate-950/90 border-b border-slate-800 font-extrabold tracking-wider">
                   <tr>
-                    <th scope="col" className="px-5 py-3.5 whitespace-nowrap">Code</th>
-                    <th scope="col" className="px-5 py-3.5">Subject Name</th>
-                    <th scope="col" className="px-5 py-3.5">Status</th>
-                    <th scope="col" className="px-5 py-3.5">Assigned Faculty</th>
-                    <th scope="col" className="px-5 py-3.5">Contact Email & Phone</th>
-                    <th scope="col" className="px-5 py-3.5 text-right">Actions</th>
+                    <th scope="col" className="px-5 py-3.5 whitespace-nowrap font-extrabold">CODE</th>
+                    <th scope="col" className="px-5 py-3.5 font-extrabold">SUBJECT NAME</th>
+                    <th scope="col" className="px-5 py-3.5 font-extrabold">STATUS</th>
+                    <th scope="col" className="px-5 py-3.5 font-extrabold">ASSIGNED FACULTY</th>
+                    <th scope="col" className="px-5 py-3.5 font-extrabold">CONTACT EMAIL & PHONE</th>
+                    <th scope="col" className="px-5 py-3.5 text-right font-extrabold">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">

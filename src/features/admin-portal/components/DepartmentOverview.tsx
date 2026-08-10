@@ -23,6 +23,8 @@ import {
   Bar,
   XAxis,
   YAxis,
+  Tooltip,
+  LabelList,
 } from 'recharts'
 
 // Vibrant VIBGYOR Color Palette for Charts
@@ -42,10 +44,28 @@ const VIBGYOR_COLORS = [
 const RADIAN = Math.PI / 180
 
 // PowerPoint style Leader Line & Data Label renderer
+function splitTextIntoLines(text: string, maxCharsPerLine = 25): string[] {
+  if (text.length <= maxCharsPerLine) return [text]
+  const words = text.split(' ')
+  const lines: string[] = []
+  let currentLine = ''
+
+  for (const word of words) {
+    if ((currentLine + ' ' + word).trim().length <= maxCharsPerLine || !currentLine) {
+      currentLine = (currentLine + ' ' + word).trim()
+    } else {
+      lines.push(currentLine)
+      currentLine = word
+    }
+  }
+  if (currentLine) lines.push(currentLine)
+  return lines
+}
+
 const renderPowerPointCustomLabel = (
   props: any,
-  activeDataId: string | null,
-  onSetActive: (id: string | null) => void,
+  _activeDataId: string | null,
+  _onSetActive: (id: string | null) => void,
   chartData: { id: string; name: string; value: number }[],
   unitLabel: string
 ) => {
@@ -57,64 +77,59 @@ const renderPowerPointCustomLabel = (
   const cos = Math.cos(-RADIAN * midAngle)
   const isRightSide = cos >= 0
 
-  // Focus Isolation opacity logic
-  const isAnyActive = activeDataId !== null && activeDataId !== undefined
-  const isActive = activeDataId === itemId
-  const elementOpacity = isAnyActive ? (isActive ? 1.0 : 0.25) : 1.0
-
   // Leader line exit point
-  const sx = cx + (Number(outerRadius) + 5) * cos
-  const sy = cy + (Number(outerRadius) + 5) * sin
+  const sx = cx + (Number(outerRadius) + 4) * cos
+  const sy = cy + (Number(outerRadius) + 4) * sin
 
   // Elbow point
-  const mx = cx + (Number(outerRadius) + 24) * cos
-  const my = cy + (Number(outerRadius) + 24) * sin
+  const mx = cx + (Number(outerRadius) + 14) * cos
+  const my = cy + (Number(outerRadius) + 14) * sin
 
   // Horizontal extension
-  const ex = mx + (isRightSide ? 22 : -22)
+  const ex = mx + (isRightSide ? 10 : -10)
   const ey = my
 
-  const textX = ex + (isRightSide ? 8 : -8)
+  const textX = ex + (isRightSide ? 6 : -6)
   const percentText = `${(percent * 100).toFixed(0)}%`
+  const nameLines = splitTextIntoLines(name, 24)
+  const lineSpacing = 14
+  const startY = ey - ((nameLines.length - 1) * lineSpacing) / 2 - 8
 
   return (
     <g
       id={`donut-label-group-${itemId}`}
-      tabIndex={0}
-      role="button"
       aria-label={`${name}: ${value} ${unitLabel} (${percentText})`}
-      onMouseEnter={() => onSetActive(itemId)}
-      onMouseLeave={() => onSetActive(null)}
-      onFocus={() => onSetActive(itemId)}
-      onBlur={() => onSetActive(null)}
-      className="cursor-pointer select-none transition-opacity duration-200 pointer-events-auto outline-none"
-      style={{ opacity: elementOpacity }}
+      className="select-none outline-none"
     >
       <path
         d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
         stroke={color}
-        strokeWidth={isActive ? 3 : 2.5}
+        strokeWidth={2.5}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="transition-all duration-200"
       />
-      <circle cx={sx} cy={sy} r={isActive ? 4.5 : 3.5} fill={color} className="transition-all duration-200" />
+      <circle cx={sx} cy={sy} r={3.5} fill={color} />
 
+      {/* Multiline Full Name */}
+      {nameLines.map((line, idx) => (
+        <text
+          key={idx}
+          x={textX}
+          y={startY + idx * lineSpacing}
+          textAnchor={isRightSide ? 'start' : 'end'}
+          dominantBaseline="central"
+          fill="#0f172a"
+          style={{ fontSize: '12px', fontWeight: 700 }}
+        >
+          {line}
+        </text>
+      ))}
+
+      {/* Value & Percentage Line */}
       <text
         x={textX}
-        y={ey - 9}
-        textAnchor={isRightSide ? 'start' : 'end'}
-        dominantBaseline="central"
-        fill="#0f172a"
-        style={{ fontSize: '12px', fontWeight: isActive ? 800 : 700 }}
-      >
-        {name}
-      </text>
-
-      <text
-        x={textX}
-        y={ey + 9}
+        y={startY + nameLines.length * lineSpacing + 2}
         textAnchor={isRightSide ? 'start' : 'end'}
         dominantBaseline="central"
         fill={color}
@@ -846,7 +861,29 @@ export function DepartmentOverview() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barChartData} margin={{ top: 25, right: 20, left: -10, bottom: 20 }}>
                   <XAxis dataKey="dept" tick={{ fontSize: 11, fill: '#1e293b', fontWeight: 700 }} />
-                  <YAxis tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }} />
+                  <YAxis
+                    allowDecimals={false}
+                    domain={[0, (dataMax: number) => Math.max(dataMax + 1, 5)]}
+                    tick={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(0, 25, 65, 0.04)' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload
+                        return (
+                          <div className="rounded-xl bg-[#001941] p-3 shadow-xl text-white text-xs space-y-1">
+                            <p className="font-bold border-b border-white/20 pb-1">{data.fullName || data.dept}</p>
+                            <p className="font-semibold text-amber-300 flex items-center justify-between gap-3 pt-0.5">
+                              <span>{viewPerspective === 'students' ? 'Students Registered:' : 'Faculty Members:'}</span>
+                              <span className="font-extrabold text-sm text-white">{data.registered}</span>
+                            </p>
+                          </div>
+                        )
+                      }
+                      return null
+                    }}
+                  />
                   <Bar
                     dataKey="registered"
                     name={viewPerspective === 'students' ? 'Students Registered' : 'Faculty Assigned'}
@@ -855,6 +892,7 @@ export function DepartmentOverview() {
                     onMouseLeave={() => setActiveBarIndex(null)}
                     animationDuration={600}
                   >
+                    <LabelList dataKey="registered" position="top" fill="#001941" fontSize={12} fontWeight={700} offset={8} />
                     {barChartData.map((_, index) => {
                       const isAnyHovered = activeBarIndex !== null
                       const isCurrentHovered = activeBarIndex === index

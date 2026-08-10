@@ -90,6 +90,13 @@ export function FacultyProfileCard({
               <span className="inline-flex items-center gap-1.5 bg-white/50 border border-white/70 px-3 py-1.5 rounded-xl shadow-2xs min-w-0">
                 <span className="text-[10px] uppercase font-extrabold text-slate-500 shrink-0">PHONE:</span>
                 <span className="font-semibold text-slate-900 break-words-safe">{faculty.mobile}</span>
+                <button
+                  onClick={() => copyToClipboard(faculty.mobile || '', 'Phone')}
+                  className="text-slate-400 hover:text-srm-primary transition-colors cursor-pointer ml-0.5 shrink-0"
+                  title="Copy Phone"
+                >
+                  {copiedField === 'Phone' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
               </span>
             )}
           </div>

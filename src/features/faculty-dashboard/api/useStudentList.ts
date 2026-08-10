@@ -22,14 +22,15 @@ interface UseStudentListParams {
   search: string
   pagination?: Pick<PaginationState, 'page' | 'pageSize'>
   departmentName?: string | null
+  crossDept?: boolean
 }
 
-export function useStudentList({ filters, search, departmentName }: UseStudentListParams) {
+export function useStudentList({ filters, search, departmentName, crossDept }: UseStudentListParams) {
   const supabase = useSupabase()
   const { role, empId } = useAuth()
 
   return useQuery({
-    queryKey: ['faculty-student-list', filters, search, departmentName, role, empId],
+    queryKey: ['faculty-student-list', filters, search, departmentName, role, empId, crossDept],
     staleTime: 3 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
@@ -37,7 +38,7 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
         .from('student_enrollments')
         .select('*', { count: 'exact' })
 
-      if (role === 'faculty' && empId) {
+      if (!crossDept && role === 'faculty' && empId) {
         const { data: assignments, error: assignError } = await supabase
           .from('faculty_assignments')
           .select('subject_code')
@@ -80,25 +81,50 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
       // Fetch all matching rows in single query
       query = query.range(0, 999)
 
-      const { data, error, count } = await query
+      const { data, error } = await query
 
       if (error) throw error
 
-      const rows: StudentListRow[] = (data ?? []).map((row, idx) => ({
-        sno: row.sno ?? idx + 1,
-        student_id: row.id,
-        student_name: row.student_name,
-        register_no: row.register_no,
-        program: row.program,
-        mobile: row.mobile_no,
-        email: row.email_id,
-        subject_code: row.subject_code,
-        subject_name: row.subject_name,
-        department_name: row.program,
-        status: (row.status as 'enrolled' | 'completed' | 'dropped') || 'enrolled',
+      // Group / deduplicate by student (register_no or student_name)
+      const studentMap = new Map<string, StudentListRow>()
+
+      ;(data ?? []).forEach((row) => {
+        const key = (row.register_no || row.student_name || '').trim().toLowerCase()
+        if (!key) return
+
+        if (!studentMap.has(key)) {
+          studentMap.set(key, {
+            sno: 0,
+            student_id: row.id,
+            student_name: row.student_name,
+            register_no: row.register_no,
+            program: row.program,
+            mobile: row.mobile_no,
+            email: row.email_id,
+            subject_code: row.subject_code || '',
+            subject_name: row.subject_name || '',
+            department_name: row.program,
+            status: (row.status as 'enrolled' | 'completed' | 'dropped') || 'enrolled',
+          })
+        } else {
+          const existing = studentMap.get(key)!
+          if (row.subject_code) {
+            existing.subject_code = existing.subject_code
+              ? `${existing.subject_code} | ${row.subject_code}`
+              : row.subject_code
+            existing.subject_name = existing.subject_name
+              ? `${existing.subject_name} | ${row.subject_name || '—'}`
+              : row.subject_name || '—'
+          }
+        }
+      })
+
+      const rows: StudentListRow[] = Array.from(studentMap.values()).map((row, idx) => ({
+        ...row,
+        sno: idx + 1,
       }))
 
-      return { rows, total: count ?? 0 }
+      return { rows, total: rows.length }
     },
     placeholderData: (prev) => prev,
   })

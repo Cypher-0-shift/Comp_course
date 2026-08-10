@@ -46,13 +46,16 @@ export function LoginForm() {
   // State
   const [loginType, setLoginType] = useState<'student' | 'staff'>(initialLoginType)
   const [staffTab, setStaffTab] = useState<'faculty' | 'admin'>('faculty')
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [empId, setEmpId] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showResend, setShowResend] = useState(false)
   const [resendEmail, setResendEmail] = useState('')
-  const [errors, setErrors] = useState<Partial<LoginFormData>>({})
+  const [errors, setErrors] = useState<Partial<LoginFormData & { empId?: string, confirmPassword?: string }>>({})
 
 
 
@@ -73,19 +76,32 @@ export function LoginForm() {
   }
 
   const validateForm = (): boolean => {
+    let isValid = true;
+    const fieldErrors: Partial<LoginFormData & { empId?: string; confirmPassword?: string }> = {}
+
     const result = loginSchema.safeParse({ email, password })
     if (!result.success) {
-      const fieldErrors: Partial<LoginFormData> = {}
       result.error.errors.forEach((err) => {
         if (err.path[0]) {
           fieldErrors[err.path[0] as keyof LoginFormData] = err.message
         }
       })
-      setErrors(fieldErrors)
-      return false
+      isValid = false;
     }
-    setErrors({})
-    return true
+
+    if (isSignUp && staffTab === 'faculty') {
+      if (!empId.trim()) {
+        fieldErrors.empId = 'Employee ID is required';
+        isValid = false;
+      }
+      if (password !== confirmPassword) {
+        fieldErrors.confirmPassword = 'Passwords do not match';
+        isValid = false;
+      }
+    }
+
+    setErrors(fieldErrors)
+    return isValid
   }
 
 
@@ -139,27 +155,43 @@ export function LoginForm() {
 
     try {
       const formattedEmail = email.includes('@') ? email.trim() : `${email.trim()}@srmist.edu.in`
-      const { data, error } = await signIn(formattedEmail, password)
-
-      if (error) {
-        handleAuthError(error)
-        return
-      }
-
-      if (data.user) {
-        const appMetadata = data.user.app_metadata as { role?: string }
-        const userMetadata = data.user.user_metadata as { role?: string }
-        const role = appMetadata?.role ?? userMetadata?.role
+      
+      if (isSignUp && staffTab === 'faculty') {
+        const { error } = await signUp(formattedEmail, password, {
+          role: 'faculty',
+          emp_id: empId.trim()
+        })
         
-        if (role) {
-          // Use redirect from query params or role-based default
-          if (redirectPath) {
-            navigate(redirectPath, { replace: true })
+        if (error) {
+          handleAuthError(error)
+          return
+        }
+        
+        toast.success('Account created successfully! Please check your email to verify your account.')
+        setIsSignUp(false)
+      } else {
+        const { data, error } = await signIn(formattedEmail, password)
+
+        if (error) {
+          handleAuthError(error)
+          return
+        }
+
+        if (data.user) {
+          const appMetadata = data.user.app_metadata as { role?: string }
+          const userMetadata = data.user.user_metadata as { role?: string }
+          const role = appMetadata?.role ?? userMetadata?.role
+          
+          if (role) {
+            // Use redirect from query params or role-based default
+            if (redirectPath) {
+              navigate(redirectPath, { replace: true })
+            } else {
+              redirectToDashboard(role as 'student' | 'faculty' | 'hod' | 'dean')
+            }
           } else {
-            redirectToDashboard(role as 'student' | 'faculty' | 'hod' | 'dean')
+            toast.error("User role not configured. Please contact the administrator.")
           }
-        } else {
-          toast.error("User role not configured. Please contact the administrator.")
         }
       }
     } catch (err) {
@@ -323,7 +355,11 @@ export function LoginForm() {
                 <div className="bg-slate-200/80 p-1.5 rounded-2xl flex gap-1 mb-6 border border-slate-300/70 backdrop-blur-md">
                   <button
                     type="button"
-                    onClick={() => setStaffTab('faculty')}
+                    onClick={() => {
+                      setStaffTab('faculty')
+                      setIsSignUp(false)
+                      setErrors({})
+                    }}
                     className={cn(
                       'flex-1 py-2.5 text-xs md:text-sm font-extrabold text-center rounded-xl transition-all cursor-pointer',
                       staffTab === 'faculty'
@@ -335,7 +371,11 @@ export function LoginForm() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStaffTab('admin')}
+                    onClick={() => {
+                      setStaffTab('admin')
+                      setIsSignUp(false)
+                      setErrors({})
+                    }}
                     className={cn(
                       'flex-1 py-2.5 text-xs md:text-sm font-extrabold text-center rounded-xl transition-all cursor-pointer',
                       staffTab === 'admin'
@@ -348,6 +388,32 @@ export function LoginForm() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Employee ID Field (Only for Faculty Sign Up) */}
+                  {isSignUp && staffTab === 'faculty' && (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="empId" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Employee ID</Label>
+                      <div className="relative">
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
+                        <Input
+                          id="empId"
+                          type="text"
+                          value={empId}
+                          onChange={(e) => {
+                            setEmpId(e.target.value)
+                            setErrors((prev) => ({ ...prev, empId: undefined }))
+                          }}
+                          placeholder="Employee ID"
+                          className={cn('pl-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-12 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.empId && 'border-red-500 focus-visible:ring-red-500')}
+                          disabled={isSubmitting || authLoading}
+                        />
+                      </div>
+                      {errors.empId && (
+                        <p className="text-xs text-red-600 font-bold" role="alert">
+                          {errors.empId}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   {/* Email Field */}
                   <div className="space-y-1.5">
                     <Label htmlFor="email" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Email</Label>
@@ -407,6 +473,33 @@ export function LoginForm() {
                     )}
                   </div>
 
+                  {/* Confirm Password Field (Only for Faculty Sign Up) */}
+                  {isSignUp && staffTab === 'faculty' && (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="confirmPassword" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Confirm Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
+                        <Input
+                          id="confirmPassword"
+                          type={showPassword ? 'text' : 'password'}
+                          value={confirmPassword}
+                          onChange={(e) => {
+                            setConfirmPassword(e.target.value)
+                            setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
+                          }}
+                          placeholder="••••••••"
+                          className={cn('pl-10 pr-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-12 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.confirmPassword && 'border-red-500 focus-visible:ring-red-500')}
+                          disabled={isSubmitting || authLoading}
+                        />
+                      </div>
+                      {errors.confirmPassword && (
+                        <p className="text-xs text-red-600 font-bold" role="alert">
+                          {errors.confirmPassword}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Email Not Confirmed Alert */}
                   {showResend && (
                     <Alert variant="destructive" className="flex gap-2 bg-red-50 border-2 border-red-200">
@@ -433,18 +526,18 @@ export function LoginForm() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
+                        {isSignUp ? 'Creating account...' : 'Signing in...'}
                       </>
                     ) : (
-                      'Sign In'
+                      isSignUp ? 'Create Account' : 'Sign In'
                     )}
                   </Button>
 
-                  {/* Forgot Password Link */}
-                  <p className="text-center text-xs text-slate-600 pt-2 font-bold">
+                  {/* Links */}
+                  <div className="flex items-center justify-center gap-4 pt-2">
                     <a
                       href="#"
-                      className="underline hover:text-[#001941]"
+                      className="text-xs text-slate-600 underline hover:text-[#001941] font-bold"
                       onClick={(e) => {
                         e.preventDefault()
                         toast.info('Contact your administrator for password reset')
@@ -452,7 +545,23 @@ export function LoginForm() {
                     >
                       Forgot password?
                     </a>
-                  </p>
+                    {staffTab === 'faculty' && (
+                      <>
+                        <span className="text-slate-300">|</span>
+                        <a
+                          href="#"
+                          className="text-xs text-[#001941] hover:underline font-bold"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setIsSignUp(!isSignUp)
+                            setErrors({})
+                          }}
+                        >
+                          {isSignUp ? 'Back to login' : 'Create new account'}
+                        </a>
+                      </>
+                    )}
+                  </div>
                 </form>
               </div>
             </div>

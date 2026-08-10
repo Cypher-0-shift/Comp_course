@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, LogOut, Sparkles, Menu, X, ChevronDown, User, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LayoutDashboard, BookOpen, LogOut, Sparkles, Menu, X, ChevronDown, User, Users, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 
 export function FacultyLayout() {
@@ -50,6 +50,7 @@ export function FacultyLayout() {
   const navItems = [
     { to: '/faculty/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/faculty/courses',   label: 'My Courses',  icon: BookOpen },
+    { to: '/faculty/directory', label: 'Directory', icon: Users },
   ]
 
   return (

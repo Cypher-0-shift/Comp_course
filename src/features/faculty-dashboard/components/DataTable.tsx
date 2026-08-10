@@ -47,7 +47,7 @@ export function DataTable<T extends object>({
   sortDir,
   onSort,
   emptyMessage = 'No records found',
-  chunkSize = 40,
+  chunkSize = 100,
 }: DataTableProps<T>) {
   const [visibleCount, setVisibleCount] = useState(chunkSize)
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
@@ -72,7 +72,7 @@ export function DataTable<T extends object>({
           setVisibleCount((prev) => Math.min(prev + chunkSize, rows.length))
         }
       },
-      { rootMargin: '200px' }
+      { root: containerRef.current, rootMargin: '300px' }
     )
 
     const el = sentinelRef.current
@@ -107,13 +107,13 @@ export function DataTable<T extends object>({
   const totalCols = renderExpandedRow ? columns.length + 1 : columns.length
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-0">
       <div
         ref={containerRef}
-        className="w-full overflow-x-auto rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 shadow-xl backdrop-blur min-h-[480px] max-h-[75vh] overflow-y-auto"
+        className="w-full overflow-x-auto bg-white min-h-[480px] max-h-[70vh] overflow-y-auto"
       >
-        <table className="w-full text-sm text-left">
-          <thead className="sticky top-0 z-10 bg-slate-950/90 backdrop-blur border-b border-slate-800">
+        <table className="w-full min-w-max text-sm text-left">
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur border-b-2 border-slate-200">
             <tr>
               {renderExpandedRow && (
                 <th className="w-10 px-3 py-3.5 text-center text-slate-500 font-semibold select-none">
@@ -124,8 +124,8 @@ export function DataTable<T extends object>({
                 <th
                   key={col.key}
                   className={cn(
-                    'px-4 py-4 md:py-3.5 font-bold uppercase tracking-wider text-[11px] text-indigo-300 select-none whitespace-nowrap',
-                    col.sortable && onSort && 'cursor-pointer hover:text-white transition-colors',
+                    'px-4 py-4 md:py-3.5 font-extrabold uppercase tracking-wider text-[11px] text-[#001941] select-none whitespace-nowrap',
+                    col.sortable && onSort && 'cursor-pointer hover:text-slate-900 transition-colors',
                     col.className
                   )}
                   onClick={() => col.sortable && onSort?.(col.key)}
@@ -141,7 +141,7 @@ export function DataTable<T extends object>({
                             <ChevronDown className="h-3.5 w-3.5 text-indigo-300" />
                           )
                         ) : (
-                          <ChevronsUpDown className="h-3.5 w-3.5" />
+                          <ChevronsUpDown className="h-3.5 w-3.5 opacity-40 hover:opacity-100 transition-opacity text-slate-400" />
                         )}
                       </span>
                     )}
@@ -150,7 +150,7 @@ export function DataTable<T extends object>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-slate-200/90">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <SkeletonRow key={i} cols={totalCols} />
@@ -176,14 +176,14 @@ export function DataTable<T extends object>({
                         className={cn(
                           'group transition-colors duration-150',
                           (onRowClick || renderExpandedRow) &&
-                            'cursor-pointer hover:bg-indigo-600/10 hover:border-indigo-500/30',
-                          isExpanded && 'bg-indigo-950/30 border-indigo-500/40'
+                            'cursor-pointer hover:bg-slate-50/50 hover:border-slate-200',
+                          isExpanded && 'bg-slate-50 border-slate-200'
                         )}
                         onClick={(e) => toggleRowExpand(key, row, e)}
                       >
                         {renderExpandedRow && (
                           <td className="px-3 py-4 md:py-3.5 text-center text-slate-400">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-slate-800/80 text-slate-300 transition group-hover:bg-indigo-600 group-hover:text-white">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition group-hover:bg-[#001941] group-hover:text-white">
                               <ChevronRight
                                 className={cn(
                                   'h-3.5 w-3.5 transition-transform duration-200',
@@ -199,7 +199,7 @@ export function DataTable<T extends object>({
                             <td
                               key={col.key}
                               className={cn(
-                                'px-4 py-4 whitespace-nowrap text-slate-300 font-medium',
+                                'px-4 py-4 whitespace-nowrap text-slate-700 font-normal',
                                 col.className
                               )}
                             >
@@ -211,9 +211,9 @@ export function DataTable<T extends object>({
 
                       {/* Inline Expanded Accordion Details Row */}
                       {renderExpandedRow && isExpanded && (
-                        <tr className="bg-slate-950/60 border-b border-indigo-500/20">
+                        <tr className="bg-slate-50 border-b border-slate-200">
                           <td colSpan={totalCols} className="p-0">
-                            <div className="p-4 sm:p-5 border-l-4 border-indigo-500 animate-in slide-in-from-top-2 duration-200">
+                            <div className="p-4 sm:p-5 border-l-4 border-[#001941] animate-in slide-in-from-top-2 duration-200">
                               {renderExpandedRow(row)}
                             </div>
                           </td>
@@ -223,7 +223,7 @@ export function DataTable<T extends object>({
                   )
                 })}
                 {hasMore && (
-                  <tr ref={sentinelRef} className="border-b border-slate-800/50">
+                  <tr ref={sentinelRef} className="border-b border-slate-100">
                     <td colSpan={totalCols} className="px-4 py-3 text-center text-xs text-slate-500 italic">
                       Loading more records…
                     </td>
@@ -234,17 +234,6 @@ export function DataTable<T extends object>({
           </tbody>
         </table>
       </div>
-
-      {/* Record Counter Badge */}
-      {!isLoading && rows.length > 0 && (
-        <div className="flex items-center justify-between px-2 text-xs text-slate-400 font-medium">
-          <span>
-            Showing <strong className="text-indigo-400">{visibleRows.length}</strong> of{' '}
-            <strong className="text-slate-200">{rows.length}</strong> records
-          </span>
-          {hasMore && <span className="text-slate-500">Scroll down for full record stream</span>}
-        </div>
-      )}
     </div>
   )
 }

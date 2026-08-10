@@ -8,7 +8,7 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import type { DeptStudentRow } from '../api/useDepartmentDetail'
 import type { FilterOptions } from '@/shared/types'
-import { Building2 } from 'lucide-react'
+import { Building2, Users } from 'lucide-react'
 
 const STATUS_BADGE: Record<string, string> = {
   enrolled: 'bg-blue-50 text-blue-700 border border-blue-200',
@@ -17,29 +17,53 @@ const STATUS_BADGE: Record<string, string> = {
 }
 
 const STUDENT_COLS: ColumnDef<DeptStudentRow>[] = [
-  { key: 'sno', header: '#', className: 'w-12 text-slate-400 font-mono text-xs' },
-  { key: 'student_name', header: 'Student Name', sortable: true },
-  { key: 'register_no', header: 'Register No', sortable: true, className: 'font-mono text-xs text-[#001941] font-bold' },
-  { key: 'program', header: 'Program' },
-  { key: 'subject_code', header: 'Subject Code', className: 'font-mono text-xs text-slate-700 font-bold' },
-  { key: 'subject_name', header: 'Subject' },
+  { key: 'sno', header: 'S.NO', className: 'w-16' },
+  { key: 'student_name', header: 'STUDENT NAME', sortable: true, className: 'min-w-[160px]' },
+  { key: 'register_no', header: 'REGISTER NO', sortable: true, className: 'min-w-[140px]' },
+  { key: 'program', header: 'PROGRAM', className: 'min-w-[200px]' },
+  {
+    key: 'subject_code',
+    header: 'SUBJECT CODE',
+    className: 'min-w-[140px]',
+    render: (v) => {
+      const val = (v as string) || ''
+      const codes = val.includes(' | ') ? val.split(' | ') : val.split(', ')
+      return (
+        <div className="flex flex-col gap-1.5 py-1">
+          {codes.map((c, i) => (
+            <span key={i} className="inline-block px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-800 w-fit">
+              {c}
+            </span>
+          ))}
+        </div>
+      )
+    },
+  },
+  {
+    key: 'subject_name',
+    header: 'SUBJECT NAME',
+    className: 'min-w-[240px]',
+    render: (v) => {
+      const val = (v as string) || ''
+      const names = val.includes(' | ') ? val.split(' | ') : val.split(', ')
+      return (
+        <div className="flex flex-col gap-1.5 py-1">
+          {names.map((n, i) => (
+            <div key={i} className="text-slate-700 font-normal leading-relaxed text-sm h-[23px] flex items-center">
+              {n}
+            </div>
+          ))}
+        </div>
+      )
+    },
+  },
   {
     key: 'mobile',
-    header: 'Mobile',
-    render: (v) => <span className="font-mono text-xs text-slate-500">{(v as string) || '—'}</span>,
+    header: 'MOBILE',
+    className: 'min-w-[120px]',
+    render: (v) => <span className="text-xs text-slate-500 font-normal">{(v as string) || '—'}</span>,
   },
-  { key: 'email', header: 'Email' },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (v) => (
-      <span
-        className={`rounded-full px-2.5 py-0.5 text-xs font-bold capitalize ${STATUS_BADGE[v as string] ?? 'bg-slate-100 text-slate-600 border border-slate-200'}`}
-      >
-        {v as string}
-      </span>
-    ),
-  },
+  { key: 'email', header: 'EMAIL', className: 'min-w-[180px]' },
 ]
 
 interface StudentEnrollmentTabProps {
@@ -66,6 +90,7 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
           search: debouncedSearch,
           page: 1,
           pageSize: 100,
+          crossDept: true,
         }
       : { filters: {}, search: '' }
   )
@@ -131,8 +156,8 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
       },
     ]
 
-    // Executive Deans see Department filter
-    if (role === 'dean' || role === 'admin') {
+    // Executive Deans, Admins, and Faculty in standalone directory view see Department filter
+    if (role === 'dean' || role === 'admin' || role === 'faculty') {
       configs.unshift({
         key: 'department_id',
         label: 'Department',
@@ -148,9 +173,9 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
     return configs
   }, [isStandalone, role])
 
-  // Dynamic columns: Include Department Name column for Deans in standalone mode
+  // Dynamic columns: Include Department Name column for Deans/Faculty in standalone mode
   const columns = useMemo(() => {
-    if (isStandalone && (role === 'dean' || role === 'admin')) {
+    if (isStandalone && (role === 'dean' || role === 'admin' || role === 'faculty')) {
       const cols = [...STUDENT_COLS]
       cols.splice(4, 0, {
         key: 'department_name' as keyof DeptStudentRow,
@@ -182,34 +207,45 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
         </div>
       )}
 
-      {/* Toolbar: Search & Optional FilterBar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <SearchInput
-          value={search}
-          onChange={(v) => setSearch(v)}
-          placeholder="Search student name, Register No, email..."
-          className="w-full sm:w-80"
-        />
+      {/* Toolbar & Data Table Combined */}
+      <div className="lg-table-container overflow-hidden flex flex-col">
+        {/* Toolbar */}
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
+          <div className="relative max-w-md w-full">
+            <SearchInput
+              value={search}
+              onChange={(v) => setSearch(v)}
+              placeholder="Search student name, Register No, email..."
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-sm font-medium text-slate-600 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm shrink-0">
+            <Users className="w-4 h-4" />
+            <span>Total: {displayRows.length}</span>
+          </div>
 
         {isStandalone && filterConfigs.length > 0 && (
-          <FilterBar
-            configs={filterConfigs}
-            activeFilters={filters}
-            onFilterChange={(newFilters) => setFilters(newFilters)}
-          />
+          <div className="w-full sm:w-auto">
+            <FilterBar
+              configs={filterConfigs}
+              activeFilters={filters}
+              onFilterChange={(newFilters) => setFilters(newFilters)}
+            />
+          </div>
         )}
-      </div>
+        </div>
 
-      {/* Data Table */}
-      <div className="lg-table-container">
-        <DataTable<DeptStudentRow>
-          columns={columns}
-          rows={displayRows}
-          isLoading={isLoading}
-          rowKey={(r) => `${r.student_id}-${r.subject_code}-${r.sno}`}
-          onRowClick={(r) => setSelectedStudentId(r.student_id)}
-          emptyMessage="No student enrollments found matching your criteria."
-        />
+        {/* Data Table */}
+        <div className="w-full">
+          <DataTable<DeptStudentRow>
+            columns={columns}
+            rows={displayRows}
+            isLoading={isLoading}
+            rowKey={(r) => `${r.student_id}-${r.subject_code}-${r.sno}`}
+            onRowClick={(r) => setSelectedStudentId(r.student_id)}
+            emptyMessage="No student enrollments found matching your criteria."
+          />
+        </div>
       </div>
 
       {/* Student Details Drawer/Modal */}

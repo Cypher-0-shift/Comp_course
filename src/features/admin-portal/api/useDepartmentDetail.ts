@@ -69,46 +69,16 @@ export function useDepartmentDetail(departmentId: string | null) {
 
       if (error) throw error
 
-      const rows: FacultyAssignmentRow[] = (data ?? []).map((row, idx) => ({
-        sno: row.sno ?? idx + 1,
-        faculty_id: row.id,
-        faculty_name: row.faculty_name,
-        emp_id: row.emp_id,
-        mobile: row.mobile_number,
-        subject_id: row.id,
-        subject_code: row.subject_code,
-        subject_name: row.subject_name,
+      const facultyMap = new Map<string, FacultyAssignmentRow>()
+      ;(data ?? []).forEach((row) => {
+        const key = (row.emp_id || row.faculty_name || '').trim().toLowerCase()
+        if (!key) return
+        if (!facultyMap.has(key)) {
+          facultyMap.set(key, {
+            sno: 0,
+            faculty_id: row.id,
+            faculty_name: row.faculty_name,
       }))
-
-      return rows
-    },
-  })
-
-  const studentsQuery = useQuery({
-    queryKey: ['admin-dept-students', departmentId],
-    enabled: !!departmentId,
-    staleTime: 3 * 60 * 1000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('student_enrollments')
-        .select('*')
-
-      if (error) throw error
-
-      const rows: DeptStudentRow[] = (data ?? []).map((row, idx) => ({
-        sno: row.sno ?? idx + 1,
-        student_id: row.id,
-        student_name: row.student_name,
-        register_no: row.register_no,
-        program: row.program,
-        mobile: row.mobile_no,
-        email: row.email_id,
-        subject_code: row.subject_code,
-        subject_name: row.subject_name,
-        status: (row.status as 'enrolled' | 'completed' | 'dropped') || 'enrolled',
-      }))
-
-      return rows
     },
   })
 

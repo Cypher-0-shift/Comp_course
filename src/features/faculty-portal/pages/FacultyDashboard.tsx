@@ -11,29 +11,11 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  LabelList,
 } from 'recharts'
 
-// Dummy faculty data
-const MOCK_FACULTY: FacultyProfile = {
-  name: 'Dr. Vinoth R',
-  emp_id: 'EMP1001',
-  department: 'Computer Science & Engineering',
-  email: 'vinoth.r@srmist.edu.in',
-  mobile: '+91 9876543210',
-}
-
-// Mock chart data with stable IDs
-const COURSE_DISTRIBUTION = [
-  { id: '18CSC301J', name: 'Compiler Design (18CSC301J)', value: 58 },
-  { id: '18CSC302J', name: 'Computer Networks (18CSC302J)', value: 46 },
-  { id: '18CSC305J', name: 'Machine Learning (18CSC305J)', value: 38 },
-]
-
-const REGISTRATION_STATS = [
-  { course: '18CSC301J', registered: 58, capacity: 60 },
-  { course: '18CSC302J', registered: 46, capacity: 50 },
-  { course: '18CSC305J', registered: 38, capacity: 40 },
-]
+import { useFacultyProfile } from '../api/useFacultyProfile'
+import { useFacultyCourses } from '../api/useFacultyCourses'
 
 // Vibrant VIBGYOR Palette: Violet, Indigo/Blue, Cyan, Emerald, Amber, Orange, Rose
 const VIBGYOR_COLORS = ['#6366f1', '#06b6d4', '#f97316', '#10b981', '#ec4899', '#8b5cf6']
@@ -100,87 +82,98 @@ function CustomPointerTooltip({ active, payload, totalStudents = 142 }: CustomTo
 
 const RADIAN = Math.PI / 180
 
-// PowerPoint style Leader Line & Data Label renderer supporting complete Focus Isolation
+function splitTextIntoLines(text: string, maxCharsPerLine = 25): string[] {
+  if (text.length <= maxCharsPerLine) return [text]
+  const words = text.split(' ')
+  const lines: string[] = []
+  let currentLine = ''
+
+  for (const word of words) {
+    if ((currentLine + ' ' + word).trim().length <= maxCharsPerLine || !currentLine) {
+      currentLine = (currentLine + ' ' + word).trim()
+    } else {
+      lines.push(currentLine)
+      currentLine = word
+    }
+  }
+  if (currentLine) lines.push(currentLine)
+  return lines
+}
+
+// PowerPoint style Leader Line & Data Label renderer supporting full multiline text
 const renderPowerPointCustomLabel = (
   props: any,
-  activeDataId: string | null,
-  onSetActive: (id: string | null) => void
+  _activeDataId: string | null,
+  _onSetActive: (id: string | null) => void
 ) => {
   const { cx = 150, cy = 150, midAngle = 0, outerRadius = 105, name = '', value = 0, percent = 0, index = 0, payload } = props
-  const itemId = payload?.id || COURSE_DISTRIBUTION[index % COURSE_DISTRIBUTION.length]?.id || name
+  const itemId = payload?.id || payload?.name || name || `item-${index}`
 
   const color = VIBGYOR_COLORS[index % VIBGYOR_COLORS.length] || '#6366f1'
   const sin = Math.sin(-RADIAN * midAngle)
   const cos = Math.cos(-RADIAN * midAngle)
   const isRightSide = cos >= 0
 
-  // Focus Isolation opacity logic
-  const isAnyActive = activeDataId !== null && activeDataId !== undefined
-  const isActive = activeDataId === itemId
-  const elementOpacity = isAnyActive ? (isActive ? 1.0 : 0.25) : 1.0
-
   // 1. Leader Line Exit point from outer radius of slice
-  const sx = cx + (Number(outerRadius) + 5) * cos
-  const sy = cy + (Number(outerRadius) + 5) * sin
+  const sx = cx + (Number(outerRadius) + 4) * cos
+  const sy = cy + (Number(outerRadius) + 4) * sin
 
   // 2. Knee / elbow inflection point (diagonal elbow line)
-  const mx = cx + (Number(outerRadius) + 24) * cos
-  const my = cy + (Number(outerRadius) + 24) * sin
+  const mx = cx + (Number(outerRadius) + 14) * cos
+  const my = cy + (Number(outerRadius) + 14) * sin
 
   // 3. Horizontal extension segment towards text
-  const ex = mx + (isRightSide ? 22 : -22)
+  const ex = mx + (isRightSide ? 10 : -10)
   const ey = my
 
-  // 4. Text Anchor Position
-  const textX = ex + (isRightSide ? 8 : -8)
+  // 4. Text Anchor Position & Multiline line calculation
+  const textX = ex + (isRightSide ? 6 : -6)
   const percentText = `${(percent * 100).toFixed(0)}%`
+  const nameLines = splitTextIntoLines(name, 24)
+  const lineSpacing = 14
+  const startY = ey - ((nameLines.length - 1) * lineSpacing) / 2 - 8
 
   return (
     <g
       id={`pie-label-group-${itemId}`}
-      tabIndex={0}
-      role="button"
       aria-label={`${name}: ${value} Students (${percentText})`}
-      onMouseEnter={() => onSetActive(itemId)}
-      onMouseLeave={() => onSetActive(null)}
-      onFocus={() => onSetActive(itemId)}
-      onBlur={() => onSetActive(null)}
-      className="cursor-pointer select-none transition-opacity duration-200 pointer-events-auto outline-none"
-      style={{ opacity: elementOpacity }}
+      className="select-none outline-none"
     >
       {/* Crisp Leader Line Path */}
       <path
         d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
         stroke={color}
-        strokeWidth={isActive ? 3 : 2.5}
+        strokeWidth={2.5}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="transition-all duration-200"
       />
       {/* Target Anchor Dot on slice perimeter */}
-      <circle cx={sx} cy={sy} r={isActive ? 4.5 : 3.5} fill={color} className="transition-all duration-200" />
+      <circle cx={sx} cy={sy} r={3.5} fill={color} />
 
-      {/* Line 1: Course Name */}
+      {/* Multiline Full Course Name */}
+      {nameLines.map((line, idx) => (
+        <text
+          key={idx}
+          x={textX}
+          y={startY + idx * lineSpacing}
+          textAnchor={isRightSide ? 'start' : 'end'}
+          dominantBaseline="central"
+          fill="#0f172a"
+          style={{ fontSize: '12px', fontWeight: 700 }}
+        >
+          {line}
+        </text>
+      ))}
+
+      {/* Value & Percentage Line */}
       <text
         x={textX}
-        y={ey - 9}
-        textAnchor={isRightSide ? 'start' : 'end'}
-        dominantBaseline="central"
-        fill="#0f172a"
-        style={{ fontSize: '13px', fontWeight: isActive ? 800 : 700 }}
-      >
-        {name}
-      </text>
-
-      {/* Line 2: Value & Percentage */}
-      <text
-        x={textX}
-        y={ey + 9}
+        y={startY + nameLines.length * lineSpacing + 2}
         textAnchor={isRightSide ? 'start' : 'end'}
         dominantBaseline="central"
         fill={color}
-        style={{ fontSize: '13px', fontWeight: 800 }}
+        style={{ fontSize: '12px', fontWeight: 800 }}
       >
         {value} Students ({percentText})
       </text>
@@ -192,9 +185,36 @@ export function FacultyDashboard() {
   const [activeDataId, setActiveDataId] = useState<string | null>(null)
   const [activeBarIndex, setActiveBarIndex] = useState<number | null>(null)
 
-  // Dynamically compute faculty metrics strictly from assigned courses
-  const totalCoursesAssigned = COURSE_DISTRIBUTION.length
-  const totalStudentsRegistered = COURSE_DISTRIBUTION.reduce((sum, item) => sum + item.value, 0)
+  const profileQuery = useFacultyProfile()
+  const coursesQuery = useFacultyCourses()
+
+  const facultyProfile: FacultyProfile = profileQuery.data || {
+    name: 'Dr. Faculty Member',
+    emp_id: 'EMP1001',
+    department: 'Computer Science & Engineering',
+    email: 'faculty@srmist.edu.in',
+    mobile: '+91 9876543210',
+  }
+
+  const assignedCourses = coursesQuery.data || []
+  const totalCoursesAssigned = assignedCourses.length
+  const totalStudentsRegistered = assignedCourses.reduce(
+    (sum, item) => sum + item.registeredStudentsCount,
+    0
+  )
+
+  const courseDistribution = assignedCourses.map((c) => ({
+    id: c.code,
+    name: `${c.title} (${c.code})`,
+    value: c.registeredStudentsCount,
+  }))
+
+  const registrationStats = assignedCourses.map((c) => ({
+    course: c.code,
+    name: c.title,
+    registered: c.registeredStudentsCount,
+    capacity: c.totalCapacity,
+  }))
 
   return (
     <div className="space-y-6 md:space-y-8 relative pb-10">
@@ -206,7 +226,7 @@ export function FacultyDashboard() {
       </div>
 
       {/* 1. Compact Profile Card */}
-      <FacultyProfileCard faculty={MOCK_FACULTY} />
+      <FacultyProfileCard faculty={facultyProfile} />
 
       {/* 2. Analytics 2-Stat Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
@@ -226,7 +246,7 @@ export function FacultyDashboard() {
         ))}
       </div>
 
-      {/* 3. Full-Width Pie Chart Card with PowerPoint Leader Lines & Focus Isolation */}
+      {/* 3. Full-Width Pie Chart Card */}
       <div className="lg-card rounded-3xl p-5 md:p-6 flex flex-col justify-between w-full">
         <div className="flex items-center justify-between mb-2">
           <div>
@@ -242,26 +262,20 @@ export function FacultyDashboard() {
 
         <div className="h-[420px] w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={{ top: 25, right: 180, bottom: 25, left: 180 }}>
+            <PieChart margin={{ top: 25, right: 220, bottom: 25, left: 220 }}>
               <Pie
-                data={COURSE_DISTRIBUTION}
+                data={courseDistribution.length > 0 ? courseDistribution : [{ id: 'none', name: 'No Courses', value: 1 }]}
                 cx="50%"
                 cy="50%"
                 innerRadius={65}
                 outerRadius={105}
                 paddingAngle={5}
                 dataKey="value"
-                activeShape={false}
-                label={(props) => renderPowerPointCustomLabel(props, activeDataId, setActiveDataId)}
+                label={(props) => renderPowerPointCustomLabel(props, null, () => {})}
                 labelLine={false}
-                onMouseEnter={(data) => setActiveDataId(data?.id || null)}
-                onMouseLeave={() => setActiveDataId(null)}
                 isAnimationActive={true}
               >
-                {COURSE_DISTRIBUTION.map((item, index) => {
-                  const isActive = activeDataId === item.id
-                  const isDimmed = activeDataId !== null && !isActive
-                  const sliceOpacity = isDimmed ? 0.25 : 1.0
+                {courseDistribution.map((item, index) => {
                   const color = VIBGYOR_COLORS[index % VIBGYOR_COLORS.length]
 
                   return (
@@ -269,13 +283,7 @@ export function FacultyDashboard() {
                       key={`cell-${item.id}`}
                       fill={color}
                       stroke="#ffffff"
-                      strokeWidth={isActive ? 3 : 2}
-                      className="cursor-pointer transition-opacity duration-200"
-                      style={{
-                        opacity: sliceOpacity,
-                      }}
-                      onMouseEnter={() => setActiveDataId(item.id)}
-                      onMouseLeave={() => setActiveDataId(null)}
+                      strokeWidth={2}
                     />
                   )
                 })}
@@ -301,9 +309,31 @@ export function FacultyDashboard() {
 
           <div className="h-[320px] w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={REGISTRATION_STATS} margin={{ top: 25, right: 20, left: -10, bottom: 20 }}>
+              <BarChart data={registrationStats} margin={{ top: 25, right: 20, left: -10, bottom: 20 }}>
                 <XAxis dataKey="course" tick={{ fontSize: 12, fill: '#1e293b', fontWeight: 700 }} />
-                <YAxis tick={{ fontSize: 12, fill: '#475569', fontWeight: 600 }} />
+                <YAxis
+                  allowDecimals={false}
+                  domain={[0, (dataMax: number) => Math.max(dataMax + 1, 5)]}
+                  tick={{ fontSize: 12, fill: '#475569', fontWeight: 600 }}
+                />
+                <Tooltip
+                  cursor={{ fill: 'rgba(0, 25, 65, 0.04)' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload
+                      return (
+                        <div className="rounded-xl bg-[#001941] p-3 shadow-xl text-white text-xs space-y-1">
+                          <p className="font-bold border-b border-white/20 pb-1">{data.name || data.course}</p>
+                          <p className="font-semibold text-amber-300 flex items-center justify-between gap-3 pt-0.5">
+                            <span>Students Registered:</span>
+                            <span className="font-extrabold text-sm text-white">{data.registered}</span>
+                          </p>
+                        </div>
+                      )
+                    }
+                    return null
+                  }}
+                />
                 <Bar
                   dataKey="registered"
                   name="Students Registered"
@@ -312,7 +342,8 @@ export function FacultyDashboard() {
                   onMouseLeave={() => setActiveBarIndex(null)}
                   animationDuration={600}
                 >
-                  {REGISTRATION_STATS.map((_, index) => {
+                  <LabelList dataKey="registered" position="top" fill="#001941" fontSize={12} fontWeight={700} offset={8} />
+                  {registrationStats.map((_, index) => {
                     const isAnyHovered = activeBarIndex !== null
                     const isCurrentHovered = activeBarIndex === index
                     const barOpacity = isAnyHovered ? (isCurrentHovered ? 1.0 : 0.25) : 1.0
@@ -349,8 +380,10 @@ export function FacultyDashboard() {
             </div>
 
             <div className="space-y-3">
-              {COURSE_DISTRIBUTION.map((item, index) => {
-                const percentage = ((item.value / totalStudentsRegistered) * 100).toFixed(0)
+              {courseDistribution.map((item, index) => {
+                const percentage = totalStudentsRegistered > 0
+                  ? ((item.value / totalStudentsRegistered) * 100).toFixed(0)
+                  : '0'
                 const color = VIBGYOR_COLORS[index % VIBGYOR_COLORS.length]
                 const isActive = activeDataId === item.id
                 const isDimmed = activeDataId !== null && !isActive

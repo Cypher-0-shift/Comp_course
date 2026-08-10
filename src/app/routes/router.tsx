@@ -8,6 +8,7 @@ const FacultyLayout = lazy(() => import('@/features/faculty-portal/layouts/Facul
 const FacultyDashboard = lazy(() => import('@/features/faculty-portal/pages/FacultyDashboard').then(m => ({ default: m.FacultyDashboard })))
 const FacultyCourses = lazy(() => import('@/features/faculty-portal/pages/MyCourses').then(m => ({ default: m.MyCourses })))
 const FacultyCourseRoster = lazy(() => import('@/features/faculty-portal/pages/CourseRoster').then(m => ({ default: m.CourseRoster })))
+const FacultyDirectory = lazy(() => import('@/features/faculty-portal/pages/Directory').then(m => ({ default: m.Directory })))
 
 const AdminDashboard = lazy(() => import('@/features/admin-portal').then(m => ({ default: m.AdminDashboard })))
 const StudentLayout = lazy(() => import('@/features/student-portal/layouts/StudentLayout').then(m => ({ default: m.StudentLayout })))
@@ -63,6 +64,7 @@ export const router = (
       <Route path="dashboard" element={<LazyElement><FacultyDashboard /></LazyElement>} />
       <Route path="courses" element={<LazyElement><FacultyCourses /></LazyElement>} />
       <Route path="courses/:subjectCode/students" element={<LazyElement><FacultyCourseRoster /></LazyElement>} />
+      <Route path="directory" element={<LazyElement><FacultyDirectory /></LazyElement>} />
 
     </Route>
 
