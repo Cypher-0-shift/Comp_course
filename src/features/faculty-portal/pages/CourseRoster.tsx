@@ -8,7 +8,9 @@ export function CourseRoster() {
   const [searchTerm, setSearchTerm] = useState('')
 
   const displayCode = subjectCode?.toUpperCase() || 'COURSE'
-  const { data: students = [], isLoading } = useCourseRoster(displayCode, searchTerm)
+  const { data, isLoading } = useCourseRoster(displayCode, searchTerm)
+  const students = data?.students || []
+  const courseName = data?.courseName || displayCode
 
   return (
     <div className="space-y-6">
@@ -22,7 +24,7 @@ export function CourseRoster() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h2 className="text-2xl font-extrabold text-[#001941] tracking-tight">{displayCode} Roster</h2>
+            <h2 className="text-2xl font-extrabold text-[#001941] tracking-tight">{courseName}</h2>
             <p className="text-sm text-slate-500">Manage enrolled students for this subject</p>
           </div>
         </div>

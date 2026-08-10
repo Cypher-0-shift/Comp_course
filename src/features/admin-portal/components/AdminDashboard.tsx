@@ -11,6 +11,7 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
+  Briefcase,
 } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 
@@ -18,6 +19,7 @@ import { DepartmentOverview } from './DepartmentOverview'
 import { DepartmentDetail } from './DepartmentDetail'
 import { DataImportPage } from './DataImportPage'
 import { StudentEnrollmentTab } from './StudentEnrollmentTab'
+import { FacultyDirectoryTab } from './FacultyDirectoryTab'
 
 export function AdminDashboard() {
   const { user, role, signOut } = useAuth()
@@ -68,6 +70,7 @@ export function AdminDashboard() {
   const navItems = [
     { to: '/admin',          label: 'Overview',     icon: LayoutDashboard, end: true },
     { to: '/admin/students', label: 'Students',     icon: Users,           end: false },
+    { to: '/admin/faculty',  label: 'Faculty',      icon: Briefcase,       end: false },
     { to: '/admin/import',   label: 'Data Import',  icon: Upload,          end: false },
   ]
 
@@ -308,7 +311,7 @@ export function AdminDashboard() {
             />
           </div>
 
-          <div className="flex-1 px-6 py-8 md:px-8 md:py-10 max-w-5xl mx-auto w-full relative z-10">
+          <div className="flex-1 px-6 py-8 md:px-8 md:py-10 max-w-[1500px] mx-auto w-full relative z-10">
             <Routes>
               {/* Department Overview */}
               <Route index element={
@@ -338,6 +341,19 @@ export function AdminDashboard() {
                 </section>
               } />
 
+              {/* Faculty Directory */}
+              <Route path="faculty" element={
+                <section className="lg-card p-6 space-y-4">
+                  <div className="border-b border-slate-200/70 pb-4">
+                    <h1 className="text-xl font-bold text-[#001941]">Faculty Directory</h1>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Assigned faculty across university departments
+                    </p>
+                  </div>
+                  <FacultyDirectoryTab />
+                </section>
+              } />
+
               <Route path="departments/:id" element={<DepartmentDetail />} />
               <Route path="import" element={<DataImportPage />} />
               <Route path="*" element={<Navigate to="/admin" replace />} />
@@ -346,7 +362,7 @@ export function AdminDashboard() {
 
           {/* Footer */}
           <footer className="lg-footer py-4 mt-auto">
-            <div className="max-w-5xl mx-auto px-6 md:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <div className="max-w-[1500px] mx-auto px-6 md:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-600">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#001941] shrink-0" />
                 <span>

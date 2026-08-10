@@ -17,8 +17,8 @@ export function useCourseRoster(courseCode?: string, search: string = '') {
     queryKey: ['course-roster', courseCode, search],
     staleTime: 3 * 60 * 1000,
     enabled: Boolean(courseCode),
-    queryFn: async (): Promise<RosterStudentItem[]> => {
-      if (!courseCode) return []
+    queryFn: async () => {
+      if (!courseCode) return { students: [], courseName: '' }
 
       let query = supabase
         .from('student_enrollments')
@@ -33,14 +33,18 @@ export function useCourseRoster(courseCode?: string, search: string = '') {
       const { data, error } = await query
       if (error) throw error
 
-      return (data || []).map((row, idx) => ({
+      const students = (data || []).map((row, idx) => ({
         id: row.student_id || `${row.register_no}-${idx}`,
         registerNo: row.register_no,
         name: row.student_name,
         program: row.program || row.department_name || 'B.Tech CSE',
         status: row.status === 'completed' ? 'Completed' : 'Registered',
         email: row.email,
-      }))
+      })) as RosterStudentItem[]
+
+      const courseName = (data || [])[0]?.subject_name || courseCode
+
+      return { students, courseName }
     },
   })
 }

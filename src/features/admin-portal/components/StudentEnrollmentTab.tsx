@@ -6,15 +6,13 @@ import { StudentDetailModal } from '@/features/faculty-dashboard/components/Stud
 import { useStudentList } from '@/features/faculty-dashboard/api/useStudentList'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { useDebounce } from '@/shared/hooks/useDebounce'
+import { useDepartmentList } from '@/features/faculty-dashboard/api/useDepartmentList'
+import { useSubjectList } from '@/features/faculty-dashboard/api/useSubjectList'
 import type { DeptStudentRow } from '../api/useDepartmentDetail'
 import type { FilterOptions } from '@/shared/types'
-import { Building2, Users } from 'lucide-react'
+import { Users } from 'lucide-react'
 
-const STATUS_BADGE: Record<string, string> = {
-  enrolled: 'bg-blue-50 text-blue-700 border border-blue-200',
-  completed: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  dropped: 'bg-rose-50 text-rose-700 border border-rose-200',
-}
+
 
 const STUDENT_COLS: ColumnDef<DeptStudentRow>[] = [
   { key: 'sno', header: 'S.NO', className: 'w-16' },
@@ -76,7 +74,11 @@ type ExtendedStudentRow = DeptStudentRow & { department_name?: string }
 export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoading }: StudentEnrollmentTabProps) {
   const { role, departmentName } = useAuth()
   const [search, setSearch] = useState('')
-  const debouncedSearch = useDebounce(search, 250)
+  const debouncedSearch = useDebounce(search, 300)
+
+  // Fetch departments for dynamic dropdown
+  const { data: deptList } = useDepartmentList()
+  const { data: subjectList } = useSubjectList()
   const [filters, setFilters] = useState<FilterOptions>({})
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
 
@@ -88,8 +90,7 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
       ? {
           filters,
           search: debouncedSearch,
-          page: 1,
-          pageSize: 100,
+          pagination: { page: 1, pageSize: 100 },
           crossDept: true,
         }
       : { filters: {}, search: '' }
@@ -106,7 +107,7 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
       program: r.program,
       mobile: r.mobile,
       email: r.email,
-      department_code: r.department_code,
+      department_code: r.department_name,
       department_name: r.department_name,
       subject_code: r.subject_code,
       subject_name: r.subject_name,
@@ -122,75 +123,45 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
     if (!debouncedSearch.trim()) return rawRows
     const q = debouncedSearch.trim().toLowerCase()
     return rawRows.filter((r) => {
-      const matchName = r.student_name?.toLowerCase().includes(q)
-      const matchReg = r.register_no?.toLowerCase().includes(q)
-      const matchEmail = r.email?.toLowerCase().includes(q)
-      const matchSubCode = r.subject_code?.toLowerCase().includes(q)
+      const matchName = (r.student_name || '').toLowerCase().includes(q)
+      const matchReg = (r.register_no || '').toLowerCase().includes(q)
+      const matchEmail = (r.email || '').toLowerCase().includes(q)
+      const matchSubCode = (r.subject_code || '').toLowerCase().includes(q)
       return matchName || matchReg || matchEmail || matchSubCode
     })
   }, [isStandalone, rawRows, debouncedSearch])
 
   // FilterBar configuration for standalone view
-  const filterConfigs: FilterBarConfig[] = useMemo(() => {
-    if (!isStandalone) return []
-    const configs: FilterBarConfig[] = [
-      {
-        key: 'status',
-        label: 'Enrollment Status',
-        options: [
-          { label: 'All Statuses', value: '' },
-          { label: 'Enrolled', value: 'enrolled' },
-          { label: 'Completed', value: 'completed' },
-          { label: 'Dropped', value: 'dropped' },
-        ],
-      },
-      {
-        key: 'subject_code',
-        label: 'Subject Code',
-        options: [
-          { label: 'All Subjects', value: '' },
-          { label: '18CSC301J – Compiler Design', value: '18CSC301J' },
-          { label: '18CSC302J – Computer Networks', value: '18CSC302J' },
-          { label: '18CSC305J – Machine Learning', value: '18CSC305J' },
-        ],
-      },
-    ]
-
-    // Executive Deans, Admins, and Faculty in standalone directory view see Department filter
-    if (role === 'dean' || role === 'admin' || role === 'faculty') {
-      configs.unshift({
-        key: 'department_id',
-        label: 'Department',
-        options: [
-          { label: 'All Departments', value: '' },
-          { label: 'CSE', value: 'CSE' },
-          { label: 'ECE', value: 'ECE' },
-          { label: 'IT', value: 'IT' },
-        ],
-      })
+  const filterOptions: FilterBarConfig = useMemo(() => {
+    if (!isStandalone) return {}
+    const opts: FilterBarConfig = {
+      status: [
+        { label: 'All Statuses', value: '' },
+        { label: 'Enrolled', value: 'enrolled' },
+        { label: 'Completed', value: 'completed' },
+        { label: 'Dropped', value: 'dropped' },
+      ],
+      subject: [
+        { label: 'All Subjects', value: '' },
+        ...(subjectList ?? []),
+      ],
     }
 
-    return configs
-  }, [isStandalone, role])
-
-  // Dynamic columns: Include Department Name column for Deans/Faculty in standalone mode
-  const columns = useMemo(() => {
-    if (isStandalone && (role === 'dean' || role === 'admin' || role === 'faculty')) {
-      const cols = [...STUDENT_COLS]
-      cols.splice(4, 0, {
-        key: 'department_name' as keyof DeptStudentRow,
-        header: 'Department',
-        render: (v, r) => (
-          <span className="inline-flex items-center gap-1 font-semibold text-slate-700">
-            <Building2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-            {(v as string) || (r as ExtendedStudentRow).department_code || '—'}
-          </span>
-        ),
-      })
-      return cols
+    if (role === 'dean' || role === 'hod' || role === 'faculty') {
+      const dynamicDepts = (deptList ?? []).map((d) => ({
+        label: d.department_name,
+        value: d.department_name,
+      }))
+      opts.department = [
+        { label: 'All Departments', value: '' },
+        ...dynamicDepts,
+      ]
     }
-    return STUDENT_COLS
-  }, [isStandalone, role])
+
+    return opts
+  }, [isStandalone, role, deptList, subjectList])
+
+  const columns = STUDENT_COLS
 
   return (
     <div className="flex flex-col gap-4">
@@ -224,12 +195,13 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
             <span>Total: {displayRows.length}</span>
           </div>
 
-        {isStandalone && filterConfigs.length > 0 && (
+        {isStandalone && Object.keys(filterOptions).length > 0 && (
           <div className="w-full sm:w-auto">
             <FilterBar
-              configs={filterConfigs}
-              activeFilters={filters}
-              onFilterChange={(newFilters) => setFilters(newFilters)}
+              options={filterOptions}
+              filters={filters}
+              onChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+              onReset={() => setFilters({})}
             />
           </div>
         )}
@@ -251,7 +223,7 @@ export function StudentEnrollmentTab({ rows: propsRows, isLoading: propsIsLoadin
       {/* Student Details Drawer/Modal */}
       <StudentDetailModal
         studentId={selectedStudentId}
-        isOpen={Boolean(selectedStudentId)}
+        open={Boolean(selectedStudentId)}
         onClose={() => setSelectedStudentId(null)}
       />
     </div>

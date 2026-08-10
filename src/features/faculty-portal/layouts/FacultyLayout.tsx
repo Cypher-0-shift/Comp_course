@@ -279,13 +279,13 @@ export function FacultyLayout() {
               style={{ opacity: 0.35, filter: 'drop-shadow(0 10px 25px rgba(0, 25, 65, 0.10))' }}
             />
           </div>
-          <div className="flex-1 px-6 py-8 md:px-8 md:py-10 max-w-5xl mx-auto w-full relative z-10">
+          <div className="flex-1 px-6 py-8 md:px-8 md:py-10 max-w-7xl mx-auto w-full relative z-10">
             <Outlet />
           </div>
 
           {/* Footer */}
           <footer className="lg-footer py-4 mt-auto">
-            <div className="max-w-5xl mx-auto px-6 md:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <div className="max-w-7xl mx-auto px-6 md:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-600">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#001941] shrink-0" />
                 <span>
