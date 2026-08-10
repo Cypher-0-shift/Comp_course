@@ -46,6 +46,50 @@ function parseDegreeAndCourse(programString?: string) {
   }
 }
 
+export function deriveDepartmentFromProgram(program?: string, existingDept?: string): string {
+  if (!program) return existingDept || 'Computer Science & Engineering'
+
+  const lower = program.toLowerCase()
+
+  if (
+    lower.includes('computer science') ||
+    lower.includes('artificial intelligence') ||
+    lower.includes('big data') ||
+    lower.includes('cloud computing') ||
+    lower.includes('cyber security') ||
+    lower.includes('gaming') ||
+    lower.includes('internet of things')
+  ) {
+    return 'Computer Science & Engineering'
+  }
+  if (lower.includes('information technology')) {
+    return 'Information Technology'
+  }
+  if (lower.includes('electronics and communication') || lower.includes('data science')) {
+    return 'Electronics & Communication Engineering'
+  }
+  if (lower.includes('electrical and electronics') || lower.includes('electrical & electronics')) {
+    return 'Electrical & Electronics Engineering'
+  }
+  if (lower.includes('mechanical')) {
+    return 'Mechanical Engineering'
+  }
+  if (lower.includes('civil') || lower.includes('structural')) {
+    return 'Civil Engineering'
+  }
+  if (lower.includes('biotechnology') || lower.includes('biotech')) {
+    return 'Biotechnology'
+  }
+  if (lower.includes('architect') || lower.includes('b.arch') || lower.includes('m.arch')) {
+    return 'Architecture'
+  }
+  if (lower.includes('interior design') || lower.includes('b.des')) {
+    return 'Design & Visual Communication'
+  }
+
+  return existingDept || 'Computer Science & Engineering'
+}
+
 export function StudentProfileCard({
   student,
   registeredCount = 0,
@@ -53,6 +97,7 @@ export function StudentProfileCard({
 }: StudentProfileCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const { degree, course } = parseDegreeAndCourse(student.program)
+  const departmentName = deriveDepartmentFromProgram(student.program, student.department?.name)
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
@@ -189,7 +234,7 @@ export function StudentProfileCard({
                   Dept
                 </span>
                 <span className="text-sm font-semibold text-slate-800 break-words-safe mt-0.5">
-                  {student.department?.name || 'Computer Science & Engineering'}
+                  {departmentName}
                 </span>
               </div>
             </div>
