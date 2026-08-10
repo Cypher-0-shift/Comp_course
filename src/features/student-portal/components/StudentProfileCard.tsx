@@ -10,12 +10,49 @@ interface StudentProfileCardProps {
   completedCount?: number
 }
 
+function parseDegreeAndCourse(programString?: string) {
+  if (!programString) {
+    return { degree: '—', course: '—' }
+  }
+
+  const raw = programString.trim()
+  let degree = ''
+  let course = ''
+
+  if (raw.includes('.-')) {
+    const parts = raw.split('.-')
+    degree = parts[0].trim()
+    course = parts.slice(1).join('.-').trim()
+  } else if (raw.includes(' - ')) {
+    const parts = raw.split(' - ')
+    degree = parts[0].trim()
+    course = parts.slice(1).join(' - ').trim()
+  } else if (raw.includes('-')) {
+    const parts = raw.split('-')
+    degree = parts[0].trim()
+    course = parts.slice(1).join('-').trim()
+  } else {
+    degree = raw
+    course = '—'
+  }
+
+  if (degree.endsWith('.')) {
+    degree = degree.slice(0, -1)
+  }
+
+  return {
+    degree: degree || '—',
+    course: course || '—',
+  }
+}
+
 export function StudentProfileCard({
   student,
   registeredCount = 0,
   completedCount: _completedCount = 0,
 }: StudentProfileCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const { degree, course } = parseDegreeAndCourse(student.program)
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
@@ -124,35 +161,35 @@ export function StudentProfileCard({
               </div>
             </div>
 
-            {/* Column 2: Degree, Dept / Course, Section in 3 separate rows */}
+            {/* Column 2: Degree, Course, Dept */}
             <div className="flex flex-col space-y-3 min-w-0 text-left">
-              {/* Degree (Row 1) */}
+              {/* Degree */}
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">
                   Degree
                 </span>
                 <span className="text-sm font-semibold text-slate-800 break-words-safe mt-0.5">
-                  {student.program || 'B.Tech'}
+                  {degree}
                 </span>
               </div>
 
-              {/* Dept (Row 2) */}
+              {/* Course */}
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">
+                  Course
+                </span>
+                <span className="text-sm font-semibold text-slate-800 break-words-safe mt-0.5">
+                  {course}
+                </span>
+              </div>
+
+              {/* Dept */}
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">
                   Dept
                 </span>
                 <span className="text-sm font-semibold text-slate-800 break-words-safe mt-0.5">
                   {student.department?.name || 'Computer Science & Engineering'}
-                </span>
-              </div>
-
-              {/* Section (Row 3) */}
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">
-                  Section
-                </span>
-                <span className="text-sm font-semibold text-slate-800 break-words-safe mt-0.5">
-                  {student.section || '—'}
                 </span>
               </div>
             </div>
