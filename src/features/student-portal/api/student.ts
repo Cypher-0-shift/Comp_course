@@ -1,137 +1,223 @@
 import { StudentWithRelations, EnrollmentWithRelations } from '@/shared/types'
 import { supabase } from '@/shared/hooks/useSupabase'
 
+// ---------------------------------------------------------------------------
+// getStudentProfile
+// ---------------------------------------------------------------------------
+// Fetches real student profile data. Source of truth:
+//   1. Auth user_metadata (name, register_no, mobile, section, program, dept)
+//   2. student_enrollments table (first matching row by email or register_no)
+// No hardcoded values. Throws if user is not authenticated.
+// ---------------------------------------------------------------------------
+
 export async function getStudentProfile(): Promise<StudentWithRelations | null> {
-  const { data: userRes } = await supabase.auth.getUser()
-  if (!userRes?.user?.email) {
-    throw new Error('No logged-in user session found.')
+  const { data: userRes, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !userRes?.user) {
+    throw new Error('Not authenticated. Please log in.')
   }
 
-  const { data, error } = await supabase
-    .from('student_enrollments')
-    .select('*')
-    .eq('email_id', userRes.user.email)
-    .limit(1)
+  const user = userRes.user
+  const meta = (user.user_metadata ?? {}) as Record<string, string>
 
-  if (error) {
-    console.error('Database query error fetching student profile:', error)
-    throw error;
+  // Build profile from auth metadata first (always available if user exists)
+  const baseProfile: StudentWithRelations = {
+    id: user.id,
+    user_id: user.id,
+    register_no: meta.register_no ?? meta.registration_number ?? '',
+    name: meta.name ?? meta.full_name ?? '',
+    program: meta.program ?? meta.degree ?? '',
+    mobile: meta.mobile_no ?? meta.mobile ?? meta.phone ?? '',
+    email: user.email ?? '',
+    section: meta.section ?? '',
+    department_id: meta.department_id ?? '',
+    academic_year_id: meta.academic_year_id ?? '',
+    created_at: user.created_at ?? '',
+    updated_at: user.updated_at ?? user.created_at ?? '',
+    department: meta.department_name || meta.department
+      ? {
+          id: meta.department_id ?? '',
+          name: meta.department_name ?? meta.department ?? '',
+          code: meta.department_code ?? '',
+          academic_year_id: meta.academic_year_id ?? '',
+          created_at: '',
+          updated_at: '',
+        }
+      : undefined,
   }
 
-  if (!data || data.length === 0) {
-    return null;
-  }
+  // Attempt to enrich from student_enrollments (first matching row)
+  try {
+    let dbRow: Record<string, any> | null = null
 
-  const profile = data[0];
+    // Try by email first
+    if (user.email) {
+      const { data: byEmail } = await supabase
+        .from('student_enrollments')
+        .select('*')
+        .eq('email_id', user.email)
+        .limit(1)
+        .maybeSingle()
 
-  return {
-    id: profile.id,
-    user_id: userRes.user.id,
-    register_no: profile.register_no,
-    name: profile.student_name,
-    program: profile.program,
-    mobile: profile.mobile_no || '',
-    email: profile.email_id,
-    department_id: 'dept-cs',
-    academic_year_id: 'ay-2026',
-    created_at: profile.created_at,
-    updated_at: profile.updated_at,
-    department: {
-      id: 'dept-cs',
-      name: profile.program,
-      code: profile.program,
-      academic_year_id: 'ay-2026',
-      created_at: profile.created_at,
-      updated_at: profile.updated_at,
+      if (byEmail) dbRow = byEmail as Record<string, any>
     }
+
+    // If no email match, try by register_no
+    if (!dbRow && baseProfile.register_no) {
+      const { data: byReg } = await supabase
+        .from('student_enrollments')
+        .select('*')
+        .eq('register_no', baseProfile.register_no)
+        .limit(1)
+        .maybeSingle()
+
+      if (byReg) dbRow = byReg as Record<string, any>
+    }
+
+    if (dbRow) {
+      // Enrich with DB values — prefer DB over metadata where available
+      if (dbRow.student_name) baseProfile.name = dbRow.student_name
+      if (dbRow.register_no) baseProfile.register_no = dbRow.register_no
+      if (dbRow.program) baseProfile.program = dbRow.program
+      if (dbRow.mobile_no) baseProfile.mobile = dbRow.mobile_no
+      if (dbRow.email_id) baseProfile.email = dbRow.email_id
+    }
+  } catch (err) {
+    // DB enrichment failed — continue with auth metadata only
+    console.warn('[student.ts] student_enrollments query failed:', err)
   }
+
+  return baseProfile
 }
 
+// ---------------------------------------------------------------------------
+// getStudentEnrollments
+// ---------------------------------------------------------------------------
+// Fetches all real enrollment rows for this student from student_enrollments.
+// Joins faculty_assignments by subject_code.
+// Returns empty array (not fallback data) if no rows found.
+// Throws if user is not authenticated.
+// ---------------------------------------------------------------------------
+
 export async function getStudentEnrollments(): Promise<EnrollmentWithRelations[]> {
-  const { data: userRes } = await supabase.auth.getUser()
-  if (!userRes?.user?.email) {
-    throw new Error('No logged-in user session found.')
+  const { data: userRes, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !userRes?.user) {
+    throw new Error('Not authenticated. Please log in.')
   }
 
-  // Get student enrollments
-  const { data: enrollmentsData, error } = await supabase
-    .from('student_enrollments')
-    .select('*')
-    .eq('email_id', userRes.user.email)
+  const user = userRes.user
+  const meta = (user.user_metadata ?? {}) as Record<string, string>
+  const registerNo = meta.register_no ?? meta.registration_number ?? ''
 
-  if (error) {
-    console.error('Database query error fetching student enrollments:', error)
-    throw error;
+  let rows: Record<string, any>[] = []
+
+  // Query by email
+  if (user.email) {
+    const { data, error } = await supabase
+      .from('student_enrollments')
+      .select('*')
+      .eq('email_id', user.email)
+
+    if (error) {
+      console.error('[student.ts] Error fetching enrollments by email:', error)
+    } else if (data && data.length > 0) {
+      rows = data
+    }
   }
 
-  if (!enrollmentsData || enrollmentsData.length === 0) {
-    return [];
+  // If nothing found by email, try register_no
+  if (rows.length === 0 && registerNo) {
+    const { data, error } = await supabase
+      .from('student_enrollments')
+      .select('*')
+      .eq('register_no', registerNo)
+
+    if (error) {
+      console.error('[student.ts] Error fetching enrollments by register_no:', error)
+    } else if (data) {
+      rows = data
+    }
   }
 
-  // Filter out any placeholders (e.g. subject_code 'N/A' which is inserted during onboarding if no course was specified)
-  const realEnrollments = enrollmentsData.filter(e => e.subject_code && e.subject_code !== 'N/A');
-
-  if (realEnrollments.length === 0) {
-    return [];
+  // No enrollments found — return empty (no fake data)
+  if (rows.length === 0) {
+    return []
   }
 
-  // Extract unique subject codes
-  const subjectCodes = Array.from(new Set(realEnrollments.map(e => e.subject_code)));
+  // Collect unique subject codes for faculty lookup
+  const subjectCodes = [...new Set(rows.map((r) => r.subject_code).filter(Boolean))]
 
-  // Fetch faculty assignments for these subjects to show teachers in the UI
-  const { data: facultyData } = await supabase
-    .from('faculty_assignments')
-    .select('*')
-    .in('subject_code', subjectCodes);
+  // Fetch faculty assignments for these subject codes
+  const facultyMap = new Map<string, Record<string, any>>()
+  if (subjectCodes.length > 0) {
+    const { data: facData, error: facError } = await supabase
+      .from('faculty_assignments')
+      .select('*')
+      .in('subject_code', subjectCodes)
 
-  const facultyMap = new Map();
-  if (facultyData) {
-    facultyData.forEach(f => {
-      // Map subject code to faculty details
-      facultyMap.set(f.subject_code.toUpperCase(), f);
-    });
+    if (facError) {
+      console.warn('[student.ts] faculty_assignments query failed:', facError)
+    } else if (facData) {
+      facData.forEach((f) => {
+        if (f.subject_code) {
+          facultyMap.set(f.subject_code as string, f)
+        }
+      })
+    }
   }
 
-  return realEnrollments.map((item) => {
-    const fac = facultyMap.get(item.subject_code.toUpperCase());
-    const faculty_subjects = fac ? [{
-      id: fac.id,
-      faculty_id: fac.emp_id,
-      subject_id: item.subject_code,
-      created_at: fac.created_at,
-      updated_at: fac.updated_at,
-      faculty: {
-        id: fac.id,
-        user_id: fac.emp_id,
-        emp_id: fac.emp_id,
-        name: fac.faculty_name,
-        email: fac.email_id || '',
-        phone: fac.mobile_number || '',
-        department_id: fac.department,
-        academic_year_id: 'ay-2026',
-        created_at: fac.created_at,
-        updated_at: fac.updated_at
-      }
-    }] : [];
+  // Map DB rows → EnrollmentWithRelations
+  return rows.map((item): EnrollmentWithRelations => {
+    const fac = facultyMap.get(item.subject_code)
+
+    const facultyRecord = fac
+      ? {
+          id: fac.id ?? fac.emp_id ?? '',
+          user_id: fac.emp_id ?? '',
+          emp_id: fac.emp_id ?? '',
+          name: fac.faculty_name ?? '',
+          email: fac.email_id ?? '',
+          phone: fac.mobile_number ?? '',
+          department_id: fac.department ?? '',
+          academic_year_id: '',
+          created_at: fac.created_at ?? '',
+          updated_at: fac.updated_at ?? fac.created_at ?? '',
+        }
+      : undefined
+
+    const facultySubjects = facultyRecord
+      ? [
+          {
+            id: `${item.subject_code}-${facultyRecord.emp_id}`,
+            faculty_id: facultyRecord.emp_id,
+            subject_id: item.subject_code ?? '',
+            created_at: '',
+            updated_at: '',
+            faculty: facultyRecord,
+          },
+        ]
+      : []
 
     return {
-      id: item.id,
-      student_id: item.id,
-      subject_id: item.subject_code,
-      academic_year_id: 'ay-2026',
-      status: item.status || 'enrolled',
-      created_at: item.created_at,
-      updated_at: item.updated_at,
+      id: item.id ?? '',
+      student_id: item.id ?? '',
+      subject_id: item.subject_code ?? '',
+      academic_year_id: '',
+      status: item.status ?? 'enrolled',
+      created_at: item.created_at ?? '',
+      updated_at: item.updated_at ?? item.created_at ?? '',
       subject: {
-        id: item.subject_code,
-        code: item.subject_code,
-        name: item.subject_name,
-        department_id: 'dept-cs',
-        academic_year_id: 'ay-2026',
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        faculty_subjects
-      }
+        id: item.subject_code ?? '',
+        code: item.subject_code ?? '',
+        name: item.subject_name ?? '',
+        credits: item.credits ? Number(item.credits) : 0,
+        department_id: '',
+        academic_year_id: '',
+        created_at: '',
+        updated_at: '',
+        faculty_subjects: facultySubjects,
+      },
     }
-  });
+  })
 }

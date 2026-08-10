@@ -75,14 +75,9 @@ export async function signUp(
   metadata?: Record<string, unknown>
 ) {
   const client = getSupabaseClient()
-  
-  // Dynamically set redirect URL to localhost if running locally, otherwise use configured site URL
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  const redirectUrl = isLocal
-    ? `${window.location.origin}/auth/callback`
-    : (import.meta.env.VITE_SITE_URL 
-        ? `${import.meta.env.VITE_SITE_URL}/auth/callback`
-        : `${window.location.origin}/auth/callback`)
+  const redirectUrl = import.meta.env.VITE_SITE_URL 
+    ? `${import.meta.env.VITE_SITE_URL}/auth/callback`
+    : `${window.location.origin}/auth/callback`
 
   const { data, error } = await client.auth.signUp({
     email,

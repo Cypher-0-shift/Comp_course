@@ -22,9 +22,7 @@ export function DepartmentDetail() {
   const uniqueSubjects = useMemo(() => {
     const map = new Map<string, string>()
     rawStudentRows.forEach((r) => {
-      if (r.enrolled_subjects && r.enrolled_subjects.length > 0) {
-        r.enrolled_subjects.forEach((s) => map.set(s.subject_code, s.subject_name))
-      } else if (r.subject_code && r.subject_name) {
+      if (r.subject_code && r.subject_name) {
         map.set(r.subject_code, r.subject_name)
       }
     })
@@ -39,11 +37,7 @@ export function DepartmentDetail() {
   // Filter student and faculty rows by selected subject dropdown
   const filteredStudentRows = useMemo(() => {
     if (selectedSubjectCode === 'all') return rawStudentRows
-    return rawStudentRows.filter(
-      (r) =>
-        r.enrolled_subjects?.some((s) => s.subject_code === selectedSubjectCode) ||
-        r.subject_code.includes(selectedSubjectCode)
-    )
+    return rawStudentRows.filter((r) => r.subject_code === selectedSubjectCode)
   }, [rawStudentRows, selectedSubjectCode])
 
   const filteredFacultyRows = useMemo(() => {
@@ -56,22 +50,22 @@ export function DepartmentDetail() {
   return (
     <div className="flex flex-col gap-6">
       {/* Header Bar with Back Navigation & Subject Dropdown */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+      <div className="lg-card flex flex-wrap items-center justify-between gap-4 p-6">
         <div className="flex items-center gap-3">
           <button
             id="admin-dept-back-btn"
             onClick={() => navigate('/admin')}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-100/80 text-slate-600 transition hover:bg-white hover:border-slate-300 hover:text-slate-900 cursor-pointer"
+            className="lg-btn-ghost flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 cursor-pointer"
             title="Back to Overview"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 border border-violet-200/60">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#001941]/8 text-[#001941] border border-[#001941]/15">
               <Building2 className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base font-bold text-slate-900">{deptTitle}</h1>
+              <h1 className="text-base font-bold text-[#001941]">{deptTitle}</h1>
               <p className="text-xs text-slate-500">
                 Department Overview • {deptMeta?.department_code || 'DEPT'}
               </p>
@@ -79,15 +73,15 @@ export function DepartmentDetail() {
           </div>
         </div>
 
-        {/* Subject Selection Dropdown Menu */}
-        <div className="flex items-center gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50 px-3.5 py-2 text-xs">
-          <BookOpen className="h-4 w-4 text-violet-600 shrink-0" />
+        {/* Subject Selection Dropdown */}
+        <div className="lg-pill-slate flex items-center gap-2.5 px-3.5 py-2 text-xs">
+          <BookOpen className="h-4 w-4 text-[#001941] shrink-0" />
           <label htmlFor="dept-subject-dropdown" className="font-medium text-slate-500">Select Subject:</label>
           <select
             id="dept-subject-dropdown"
             value={selectedSubjectCode}
             onChange={(e) => setSelectedSubjectCode(e.target.value)}
-            className="bg-transparent font-semibold text-slate-900 focus:outline-none cursor-pointer max-w-[260px] truncate"
+            className="bg-transparent font-semibold text-[#001941] focus:outline-none cursor-pointer max-w-[260px] truncate"
           >
             <option value="all" className="bg-white text-slate-900">
               All Subjects ({uniqueSubjects.length})
@@ -101,17 +95,17 @@ export function DepartmentDetail() {
         </div>
       </div>
 
-      {/* Tabs Container - Default Tab 1: Student List, Tab 2: Faculty List */}
+      {/* Tabs Container */}
       <Tabs.Root defaultValue="students">
-        <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 mb-4">
-          <Tabs.List className="flex gap-1.5 rounded-xl border border-slate-200/80 bg-slate-100/80 p-1">
+        <div className="flex items-center justify-between border-b border-slate-200/60 pb-3 mb-4">
+          <Tabs.List className="flex gap-1.5 rounded-xl border border-slate-200/60 bg-white/60 backdrop-blur-sm p-1">
             <Tabs.Trigger
               value="students"
               id="dept-tab-students"
               className={cn(
                 'flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all select-none',
-                'text-slate-600 hover:text-slate-900',
-                'data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-md shadow-violet-950/20'
+                'text-slate-600 hover:text-[#001941]',
+                'data-[state=active]:bg-[#001941] data-[state=active]:text-white data-[state=active]:shadow-md'
               )}
             >
               <Users className="h-3.5 w-3.5" />
@@ -123,8 +117,8 @@ export function DepartmentDetail() {
               id="dept-tab-faculty"
               className={cn(
                 'flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all select-none',
-                'text-slate-600 hover:text-slate-900',
-                'data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-md shadow-violet-950/20'
+                'text-slate-600 hover:text-[#001941]',
+                'data-[state=active]:bg-[#001941] data-[state=active]:text-white data-[state=active]:shadow-md'
               )}
             >
               <GraduationCap className="h-3.5 w-3.5" />
@@ -135,7 +129,7 @@ export function DepartmentDetail() {
           {selectedSubjectCode !== 'all' && (
             <button
               onClick={() => setSelectedSubjectCode('all')}
-              className="text-xs text-violet-400 hover:underline font-medium"
+              className="text-xs text-[#001941] hover:underline font-semibold"
             >
               Reset subject filter
             </button>
@@ -144,12 +138,16 @@ export function DepartmentDetail() {
 
         {/* Tab Content 1: Student List */}
         <Tabs.Content value="students" className="focus:outline-none">
-          <StudentEnrollmentTab rows={filteredStudentRows} isLoading={studentsQuery.isLoading} />
+          <div className="lg-table-container">
+            <StudentEnrollmentTab rows={filteredStudentRows} isLoading={studentsQuery.isLoading} />
+          </div>
         </Tabs.Content>
 
         {/* Tab Content 2: Faculty List */}
         <Tabs.Content value="faculty" className="focus:outline-none">
-          <FacultyAssignmentsTab rows={filteredFacultyRows} isLoading={facultyQuery.isLoading} />
+          <div className="lg-table-container">
+            <FacultyAssignmentsTab rows={filteredFacultyRows} isLoading={facultyQuery.isLoading} />
+          </div>
         </Tabs.Content>
       </Tabs.Root>
     </div>

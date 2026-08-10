@@ -123,36 +123,30 @@ function unregisterSession(): void {
  * Returns true if session was allowed, false if oldest was kicked
  */
 function enforceMaxSessions(userId: string): boolean {
-  const sessions = getTrackedSessions().filter((s) => s.userId === userId)
-
-  // Remove expired sessions (older than 24 hours)
+  const sessions = getTrackedSessions()
   const now = Date.now()
-  const validSessions = sessions.filter((s) => now - s.timestamp < 24 * 60 * 60 * 1000)
+  const tabId = getTabId()
 
-  if (validSessions.length >= MAX_CONCURRENT_SESSIONS) {
+  // Filter valid sessions for this user (younger than 24h)
+  const userSessions = sessions.filter((s) => s.userId === userId && now - s.timestamp < 24 * 60 * 60 * 1000)
+
+  if (userSessions.length >= MAX_CONCURRENT_SESSIONS) {
     // Sort by timestamp, oldest first
-    validSessions.sort((a, b) => a.timestamp - b.timestamp)
+    userSessions.sort((a, b) => a.timestamp - b.timestamp)
 
-    // Remove oldest session
-    const oldest = validSessions[0]
-    const allSessions = getTrackedSessions()
-    const filtered = allSessions.filter((s) => s.sessionId !== oldest.sessionId)
-    saveTrackedSessions(filtered)
+    // Remove oldest session(s)
+    const toEvictCount = userSessions.length - MAX_CONCURRENT_SESSIONS + 1
+    const evictedSessions = userSessions.slice(0, toEvictCount)
+    const evictedTabIds = new Set(evictedSessions.map((s) => s.tabId))
 
-    // Notify the oldest tab (if it's still open)
-    if (typeof window !== 'undefined' && oldest.tabId !== getTabId()) {
-      // Dispatch custom event for cross-tab communication
-      window.dispatchEvent(
-        new CustomEvent('ccd:session-kicked', {
-          detail: { sessionId: oldest.sessionId },
-        })
-      )
+    const remaining = sessions.filter((s) => !evictedTabIds.has(s.tabId))
+    saveTrackedSessions(remaining)
+
+    if (!evictedTabIds.has(tabId)) {
+      toast.info('Session limit reached', {
+        description: 'Logged out older browser session.',
+      })
     }
-
-    toast.warning('Max sessions reached', {
-      description: 'Oldest session ended. You have been logged in.',
-    })
-    return false
   }
 
   return true
@@ -177,8 +171,6 @@ export function extractUserMetadata(user: User | null): {
     | { role?: UserRole; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
     | undefined
 
-  const role = appMetadata?.role ?? userMetadata?.role ?? null
-
   const deptName =
     appMetadata?.department_name ??
     appMetadata?.department ??
@@ -199,7 +191,7 @@ export function extractUserMetadata(user: User | null): {
     null
 
   return {
-    role: role as UserRole | null,
+    role: appMetadata?.role ?? userMetadata?.role ?? null,
     departmentId: deptId,
     departmentName: deptName,
     empId,

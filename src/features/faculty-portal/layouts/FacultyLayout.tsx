@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, LogOut, Sparkles, Menu, X, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LayoutDashboard, BookOpen, LogOut, Sparkles, Menu, X, ChevronDown, User, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 
-export function StudentLayout() {
+export function FacultyLayout() {
   const { user, signOut } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -36,7 +36,7 @@ export function StudentLayout() {
 
   const userMetaDataName = (user?.user_metadata?.name as string) || (user?.app_metadata?.name as string)
   const emailPrefix = user?.email?.split('@')[0] ?? ''
-  const displayName = userMetaDataName || (emailPrefix ? emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1) : 'Student')
+  const displayName = userMetaDataName || (emailPrefix ? emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1) : 'Faculty')
 
   const words = displayName.trim().split(/\s+/)
   const initials = words.length >= 2 
@@ -48,8 +48,8 @@ export function StudentLayout() {
   }
 
   const navItems = [
-    { to: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/student/courses',   label: 'My Courses',  icon: BookOpen },
+    { to: '/faculty/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/faculty/courses',   label: 'My Courses',  icon: BookOpen },
   ]
 
   return (
@@ -64,7 +64,7 @@ export function StudentLayout() {
           {/* Mobile menu button */}
           <button
             id="mobile-menu-toggle"
-            className="md:hidden p-2 rounded-lg text-srm-on-surface-muted hover:bg-srm-surface-container transition-colors"
+            className="md:hidden p-2 rounded-lg text-srm-on-surface-muted hover:bg-srm-surface-container transition-colors cursor-pointer"
             onClick={() => setMobileMenuOpen((v) => !v)}
             aria-label="Toggle navigation"
           >
@@ -111,7 +111,7 @@ export function StudentLayout() {
                   </div>
                   <div className="overflow-hidden">
                     <p className="font-bold text-sm text-srm-primary truncate leading-snug">{displayName}</p>
-                    <p className="text-[11px] text-srm-on-surface-muted truncate">{user?.email || 'Student'}</p>
+                    <p className="text-[11px] text-srm-on-surface-muted truncate">{user?.email || 'Faculty'}</p>
                   </div>
                 </div>
 
@@ -154,7 +154,7 @@ export function StudentLayout() {
             </div>
           ) : (
             <div className="flex items-center justify-between mb-6 px-2">
-            <p className="font-bold text-sm text-[#001941] tracking-tight uppercase">Student Portal</p>
+              <p className="font-bold text-sm text-[#001941] tracking-tight uppercase">Faculty Portal</p>
               <button
                 onClick={() => setIsCollapsed(true)}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-srm-primary hover:bg-slate-100 transition-colors cursor-pointer"
@@ -167,7 +167,7 @@ export function StudentLayout() {
           )}
 
           {/* Nav items */}
-          <nav className="flex-1 flex flex-col gap-1.5" aria-label="Student navigation">
+          <nav className="flex-1 flex flex-col gap-1.5" aria-label="Faculty navigation">
             {navItems.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
@@ -197,13 +197,13 @@ export function StudentLayout() {
           {/* Logout pinned at bottom — Centered & Enhanced */}
           <div className="pt-4 border-t border-white/40">
             <button
-              id="student-signout-btn"
+              id="faculty-signout-btn"
               onClick={handleSignOut}
               title={isCollapsed ? 'Logout' : undefined}
               className={`w-full flex items-center justify-center gap-2.5 py-2.5 rounded-xl text-sm font-bold lg-btn-logout cursor-pointer ${
                 isCollapsed ? 'px-0' : 'px-4'
               }`}
-              aria-label="Sign out of student portal"
+              aria-label="Sign out of faculty portal"
             >
               <LogOut className="w-4 h-4 shrink-0" />
               {!isCollapsed && <span>Logout</span>}
@@ -220,13 +220,13 @@ export function StudentLayout() {
           />
         )}
         <aside
-          className={`fixed left-0 top-topbar-height bottom-0 w-sidebar-width lg-sidebar z-50 flex flex-col py-6 px-4 md:hidden transition-transform duration-300 ${
+          className={`fixed left-0 top-topbar-height bottom-0 w-sidebar-width bg-white border-r border-slate-200/90 z-50 flex flex-col py-6 px-4 md:hidden transition-transform duration-300 ${
             mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           {/* Sidebar header block */}
           <div className="mb-4 px-2">
-            <p className="font-bold text-lg text-srm-primary leading-tight tracking-tight">Student Portal</p>
+            <p className="font-bold text-lg text-srm-primary leading-tight tracking-tight">Faculty Portal</p>
           </div>
 
           <nav className="flex-1 flex flex-col gap-1.5">
@@ -268,7 +268,7 @@ export function StudentLayout() {
         <main className={`flex-1 min-h-[calc(100vh-64px)] flex flex-col transition-all duration-300 ${
           isCollapsed ? 'md:ml-[76px]' : 'md:ml-[250px]'
         }`}>
-          {/* SRM Logo watermark — clear & visible behind light transparent cards */}
+          {/* SRM Logo watermark */}
           <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center transition-all duration-300" style={{ left: isCollapsed ? '76px' : '250px' }}>
             <img
               src="/8.-SRM-Logo-300x300.webp"
@@ -321,7 +321,7 @@ export function StudentLayout() {
         ))}
         <button
           onClick={handleSignOut}
-          className="flex flex-col items-center justify-center flex-1 gap-1 text-[10px] font-bold text-rose-600 hover:text-rose-800 transition-colors"
+          className="flex flex-col items-center justify-center flex-1 gap-1 text-[10px] font-bold text-rose-600 hover:text-rose-800 transition-colors cursor-pointer"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>

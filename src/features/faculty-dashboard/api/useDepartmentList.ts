@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSupabase } from '@/shared/hooks/useSupabase'
-import { useAuth } from '@/shared/hooks/useAuth'
 
 export interface DepartmentListRow {
   sno: number
@@ -12,26 +11,19 @@ export interface DepartmentListRow {
 
 export function useDepartmentList() {
   const supabase = useSupabase()
-  const { role, departmentName } = useAuth()
 
   return useQuery({
-    queryKey: ['faculty-department-list', role, departmentName],
+    queryKey: ['faculty-department-list'],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from('departments')
         .select('*')
         .order('sl_no', { ascending: true })
 
-      if (role === 'hod' && departmentName) {
-        query = query.ilike('department_name', `%${departmentName}%`)
-      }
-
-      const { data, error } = await query
-
       if (error) throw error
 
-      const rows: DepartmentListRow[] = (data ?? []).map((dept, idx) => ({
-        sno: dept.sl_no ?? idx + 1,
+      const rows: DepartmentListRow[] = (data ?? []).map((dept) => ({
+        sno: dept.sl_no,
         department_id: dept.id,
         department_name: dept.department_name,
         department_code: dept.department_name.split('-')[0] || dept.department_name,

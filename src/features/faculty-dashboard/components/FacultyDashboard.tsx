@@ -10,7 +10,7 @@ import { DepartmentListTab } from './DepartmentListTab'
 import { UploadFABModal } from './UploadFABModal'
 
 export function FacultyDashboard() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const [activeSidebarTab, setActiveSidebarTab] = useState<FacultyTabType>('dashboard')
 
   return (
@@ -46,6 +46,7 @@ export function FacultyDashboard() {
             if (window.innerWidth < 768) setSidebarCollapsed(true)
           }}
           collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
         />
 
         {/* Main Content Viewport */}
