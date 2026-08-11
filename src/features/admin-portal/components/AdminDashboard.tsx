@@ -22,7 +22,7 @@ import { StudentEnrollmentTab } from './StudentEnrollmentTab'
 import { FacultyDirectoryTab } from './FacultyDirectoryTab'
 
 export function AdminDashboard() {
-  const { user, role, signOut } = useAuth()
+  const { user, signOut } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -366,7 +366,7 @@ export function AdminDashboard() {
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#001941] shrink-0" />
                 <span>
-                  Created by{' '}
+                  Developed by{' '}
                   <strong className="text-[#001941] font-bold">Sanjay Ganesh</strong> &{' '}
                   <strong className="text-[#001941] font-bold">Tushar Sinha</strong>{' '}
                   (3rd Year AIML) under the guidance of{' '}

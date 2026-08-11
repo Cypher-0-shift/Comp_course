@@ -805,7 +805,7 @@ export function DepartmentOverview() {
                   activeShape={false}
                   label={(props) => renderPowerPointCustomLabel(props, activePieId, setActivePieId, chart1Data, unitLabel)}
                   labelLine={false}
-                  onMouseEnter={(data) => setActivePieId(data?.id || null)}
+                  onMouseEnter={(data: any) => setActivePieId(data?.id || null)}
                   onMouseLeave={() => setActivePieId(null)}
                   isAnimationActive={true}
                 >

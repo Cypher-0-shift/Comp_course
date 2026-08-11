@@ -45,10 +45,10 @@ export function useFacultyCourses() {
           const capacity = Math.max(registered + 10, 60)
 
           return {
-            id: row.subject_id || row.subject_code,
+            id: row.id || row.subject_code,
             code: row.subject_code,
             title: row.subject_name || row.subject_code,
-            department: row.department_name || row.department || 'Engineering',
+            department: row.department || 'Engineering',
             registeredStudentsCount: registered,
             totalCapacity: capacity,
             progressPercentage: Math.round((registered / capacity) * 100),

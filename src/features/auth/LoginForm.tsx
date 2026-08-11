@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../../shared/hooks/useAuth'
-import { signIn, resendConfirmation, signUp, getSupabaseClient } from '../../shared/hooks/useSupabase'
+import { signIn, resendConfirmation, signUp } from '../../shared/hooks/useSupabase'
 import { toast } from 'sonner'
 import { cn } from '../../shared/utils/cn'
 import { handleUIError } from '@/shared/utils/error-handler'
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Mail, Lock, Eye, EyeOff, User, GraduationCap } from 'lucide-react'
+import { Loader2, Mail, Lock, Eye, EyeOff, User } from 'lucide-react'
 
 // =============================================
 // Zod Validation Schema
@@ -36,15 +36,11 @@ export function LoginForm() {
   const { redirectToDashboard, isLoading: authLoading } = useAuth()
 
   // Get query params
-  const typeParam = searchParams.get('type')
   const redirectPath = searchParams.get('redirect') || null
 
   const envAppType = import.meta.env.VITE_APP_TYPE
-  const defaultMode = envAppType === 'staff' ? 'staff' : 'student'
-  const initialLoginType = typeParam === 'staff' ? 'staff' : (typeParam === 'student' ? 'student' : defaultMode)
 
   // State
-  const [loginType, setLoginType] = useState<'student' | 'staff'>(initialLoginType)
   const [staffTab, setStaffTab] = useState<'faculty' | 'admin'>('faculty')
   const [isSignUp, setIsSignUp] = useState(false)
   const [empId, setEmpId] = useState('')
@@ -236,18 +232,18 @@ export function LoginForm() {
   // =============================================
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen h-screen max-h-screen flex items-center justify-center px-4 py-2 relative overflow-hidden">
       {/* Animated Ambient Mesh Canvas */}
       <div className="app-background" />
 
-      <div className="w-full max-w-md flex flex-col items-center gap-4 relative z-10">
+      <div className="w-full max-w-md flex flex-col items-center justify-center relative z-10 my-auto">
         {envAppType === 'student' ? (
           /* Simplified Student Login Glass Card */
           <div className="w-full rounded-3xl border border-white/90 bg-white/90 backdrop-blur-2xl shadow-2xl overflow-hidden">
-            <div className="p-8 md:p-10">
-              <div className="text-center mb-8">
-                <div className="flex justify-center mb-5">
-                  <img src="/8.-SRM-Logo-300x300.webp" alt="SRM Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain drop-shadow-md" />
+            <div className="p-6 md:p-8">
+              <div className="text-center mb-5">
+                <div className="flex justify-center mb-3">
+                  <img src="/8.-SRM-Logo-300x300.webp" alt="SRM Logo" className="h-14 w-14 md:h-16 md:w-16 object-contain drop-shadow-md" />
                 </div>
                 <h1 className="text-xl md:text-2xl font-extrabold text-[#001941] tracking-tight">
                   Student Portal Login
@@ -255,8 +251,8 @@ export function LoginForm() {
                 <p className="text-xs text-slate-700 font-bold mt-1">SRMIST Compensatory Course Dashboard</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-1.5">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1">
                   <Label htmlFor="email" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Email or Student ID</Label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
@@ -269,7 +265,7 @@ export function LoginForm() {
                         setErrors((prev) => ({ ...prev, email: undefined }))
                       }}
                       placeholder="ID or university email"
-                      className={cn('pl-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-12 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.email && 'border-red-500 focus-visible:ring-red-500')}
+                      className={cn('pl-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-11 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all text-sm', errors.email && 'border-red-500 focus-visible:ring-red-500')}
                       disabled={isSubmitting || authLoading}
                     />
                   </div>
@@ -278,7 +274,7 @@ export function LoginForm() {
                   )}
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <Label htmlFor="password" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
@@ -288,7 +284,7 @@ export function LoginForm() {
                       value={password}
                       onChange={handlePasswordChange}
                       placeholder="••••••••"
-                      className={cn('pl-10 pr-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-12 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.password && 'border-red-500 focus-visible:ring-red-500')}
+                      className={cn('pl-10 pr-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-11 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all text-sm', errors.password && 'border-red-500 focus-visible:ring-red-500')}
                       disabled={isSubmitting || authLoading}
                     />
                     <button
@@ -306,8 +302,8 @@ export function LoginForm() {
                 </div>
 
                 {showResend && (
-                  <Alert variant="destructive" className="flex gap-2 bg-red-50 border-2 border-red-200">
-                    <AlertDescription className="flex-1 text-sm break-words-safe text-red-900 font-bold">
+                  <Alert variant="destructive" className="flex gap-2 bg-red-50 border-2 border-red-200 py-2">
+                    <AlertDescription className="flex-1 text-xs break-words-safe text-red-900 font-bold">
                       Email not confirmed.{' '}
                       <button type="button" onClick={handleResendConfirmation} className="underline font-extrabold">
                         Resend
@@ -318,7 +314,7 @@ export function LoginForm() {
 
                 <Button
                   type="submit"
-                  className="w-full lg-btn-primary rounded-xl h-12 font-bold transition-all mt-2 cursor-pointer shadow-md hover:shadow-lg text-sm"
+                  className="w-full lg-btn-primary rounded-xl h-11 font-bold transition-all mt-1 cursor-pointer shadow-md hover:shadow-lg text-sm"
                   disabled={isSubmitting || authLoading}
                 >
                   {isSubmitting ? (
@@ -336,64 +332,74 @@ export function LoginForm() {
         ) : (
           /* Faculty & Admin Login Glass Card */
           <div className="w-full rounded-3xl border border-white/90 bg-white/90 backdrop-blur-2xl shadow-2xl overflow-hidden">
-            <div className="p-8 md:p-10">
+            <div className={cn('transition-all', isSignUp ? 'p-4 sm:p-5 md:p-6' : 'p-6 md:p-8')}>
               {/* Logo + title */}
-              <div className="text-center mb-8">
-                <div className="flex justify-center mb-5">
-                  <img src="/8.-SRM-Logo-300x300.webp" alt="SRM Logo" className="h-16 w-16 md:h-20 md:w-20 object-contain drop-shadow-md" />
+              <div className={cn('text-center transition-all', isSignUp ? 'mb-3' : 'mb-5')}>
+                <div className={cn('flex justify-center transition-all', isSignUp ? 'mb-1.5' : 'mb-3')}>
+                  <img
+                    src="/8.-SRM-Logo-300x300.webp"
+                    alt="SRM Logo"
+                    className={cn('object-contain drop-shadow-md transition-all', isSignUp ? 'h-10 w-10 md:h-12 md:w-12' : 'h-14 w-14 md:h-16 md:w-16')}
+                  />
                 </div>
-                <h1 className="text-2xl font-extrabold text-[#001941] tracking-tight">
-                  {staffTab === 'faculty' ? 'Faculty Portal Login' : 'Admin Portal Login'}
+                <h1 className={cn('font-extrabold text-[#001941] tracking-tight transition-all', isSignUp ? 'text-lg md:text-xl' : 'text-xl md:text-2xl')}>
+                  {isSignUp
+                    ? 'Create Faculty Account'
+                    : staffTab === 'faculty'
+                    ? 'Faculty Portal Login'
+                    : 'Admin Portal Login'}
                 </h1>
-                <p className="text-xs text-slate-700 font-bold mt-1">
+                <p className="text-[11px] md:text-xs text-slate-700 font-bold mt-0.5">
                   SRMIST Compensatory Course Dashboard
                 </p>
               </div>
 
               <div>
                 {/* Staff Segmented Control */}
-                <div className="bg-slate-200/80 p-1.5 rounded-2xl flex gap-1 mb-6 border border-slate-300/70 backdrop-blur-md">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStaffTab('faculty')
-                      setIsSignUp(false)
-                      setErrors({})
-                    }}
-                    className={cn(
-                      'flex-1 py-2.5 text-xs md:text-sm font-extrabold text-center rounded-xl transition-all cursor-pointer',
-                      staffTab === 'faculty'
-                        ? 'bg-[#001941] text-white shadow-md'
-                        : 'text-slate-800 hover:text-slate-950 hover:bg-white/60'
-                    )}
-                  >
-                    Faculty
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStaffTab('admin')
-                      setIsSignUp(false)
-                      setErrors({})
-                    }}
-                    className={cn(
-                      'flex-1 py-2.5 text-xs md:text-sm font-extrabold text-center rounded-xl transition-all cursor-pointer',
-                      staffTab === 'admin'
-                        ? 'bg-[#001941] text-white shadow-md'
-                        : 'text-slate-800 hover:text-slate-950 hover:bg-white/60'
-                    )}
-                  >
-                    Admin (HOD / Dean)
-                  </button>
-                </div>
+                {!isSignUp && (
+                  <div className="bg-slate-200/80 p-1 rounded-2xl flex gap-1 mb-4 border border-slate-300/70 backdrop-blur-md">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStaffTab('faculty')
+                        setIsSignUp(false)
+                        setErrors({})
+                      }}
+                      className={cn(
+                        'flex-1 py-2 text-xs md:text-sm font-extrabold text-center rounded-xl transition-all cursor-pointer',
+                        staffTab === 'faculty'
+                          ? 'bg-[#001941] text-white shadow-md'
+                          : 'text-slate-800 hover:text-slate-950 hover:bg-white/60'
+                      )}
+                    >
+                      Faculty
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStaffTab('admin')
+                        setIsSignUp(false)
+                        setErrors({})
+                      }}
+                      className={cn(
+                        'flex-1 py-2 text-xs md:text-sm font-extrabold text-center rounded-xl transition-all cursor-pointer',
+                        staffTab === 'admin'
+                          ? 'bg-[#001941] text-white shadow-md'
+                          : 'text-slate-800 hover:text-slate-950 hover:bg-white/60'
+                      )}
+                    >
+                      Admin
+                    </button>
+                  </div>
+                )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className={cn('transition-all', isSignUp ? 'space-y-2' : 'space-y-3.5')}>
                   {/* Employee ID Field (Only for Faculty Sign Up) */}
                   {isSignUp && staffTab === 'faculty' && (
-                    <div className="space-y-1.5">
-                      <Label htmlFor="empId" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Employee ID</Label>
+                    <div className="space-y-1">
+                      <Label htmlFor="empId" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Employee ID</Label>
                       <div className="relative">
-                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                         <Input
                           id="empId"
                           type="text"
@@ -403,29 +409,30 @@ export function LoginForm() {
                             setErrors((prev) => ({ ...prev, empId: undefined }))
                           }}
                           placeholder="Employee ID"
-                          className={cn('pl-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-12 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.empId && 'border-red-500 focus-visible:ring-red-500')}
+                          className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-9 md:h-10 text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.empId && 'border-red-500 focus-visible:ring-red-500')}
                           disabled={isSubmitting || authLoading}
                         />
                       </div>
                       {errors.empId && (
-                        <p className="text-xs text-red-600 font-bold" role="alert">
+                        <p className="text-[10px] text-red-600 font-bold" role="alert">
                           {errors.empId}
                         </p>
                       )}
                     </div>
                   )}
+
                   {/* Email Field */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Email</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="email" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                       <Input
                         id="email"
                         type="email"
                         value={email}
                         onChange={handleEmailChange}
                         placeholder="you@college.edu"
-                        className={cn('pl-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-12 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.email && 'border-red-500 focus-visible:ring-red-500')}
+                        className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', isSignUp ? 'h-9 md:h-10' : 'h-10 md:h-11', errors.email && 'border-red-500 focus-visible:ring-red-500')}
                         disabled={isSubmitting || authLoading}
                         autoComplete="email"
                         aria-invalid={errors.email ? 'true' : 'false'}
@@ -433,24 +440,24 @@ export function LoginForm() {
                       />
                     </div>
                     {errors.email && (
-                      <p id="email-error" className="text-xs text-red-600 font-bold" role="alert">
+                      <p id="email-error" className="text-[10px] text-red-600 font-bold" role="alert">
                         {errors.email}
                       </p>
                     )}
                   </div>
 
                   {/* Password Field */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="password" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Password</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="password" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                       <Input
                         id="password"
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={handlePasswordChange}
                         placeholder="••••••••"
-                        className={cn('pl-10 pr-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-12 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.password && 'border-red-500 focus-visible:ring-red-500')}
+                        className={cn('pl-9 pr-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', isSignUp ? 'h-9 md:h-10' : 'h-10 md:h-11', errors.password && 'border-red-500 focus-visible:ring-red-500')}
                         disabled={isSubmitting || authLoading}
                         autoComplete="current-password"
                         aria-invalid={errors.password ? 'true' : 'false'}
@@ -459,15 +466,15 @@ export function LoginForm() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-600 hover:text-[#001941] transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-[#001941] transition-colors"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                         tabIndex={-1}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                       </button>
                     </div>
                     {errors.password && (
-                      <p id="password-error" className="text-xs text-red-600 font-bold" role="alert">
+                      <p id="password-error" className="text-[10px] text-red-600 font-bold" role="alert">
                         {errors.password}
                       </p>
                     )}
@@ -475,10 +482,10 @@ export function LoginForm() {
 
                   {/* Confirm Password Field (Only for Faculty Sign Up) */}
                   {isSignUp && staffTab === 'faculty' && (
-                    <div className="space-y-1.5">
-                      <Label htmlFor="confirmPassword" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Confirm Password</Label>
+                    <div className="space-y-1">
+                      <Label htmlFor="confirmPassword" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Confirm Password</Label>
                       <div className="relative">
-                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                         <Input
                           id="confirmPassword"
                           type={showPassword ? 'text' : 'password'}
@@ -488,12 +495,12 @@ export function LoginForm() {
                             setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
                           }}
                           placeholder="••••••••"
-                          className={cn('pl-10 pr-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-12 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.confirmPassword && 'border-red-500 focus-visible:ring-red-500')}
+                          className={cn('pl-9 pr-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-9 md:h-10 text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.confirmPassword && 'border-red-500 focus-visible:ring-red-500')}
                           disabled={isSubmitting || authLoading}
                         />
                       </div>
                       {errors.confirmPassword && (
-                        <p className="text-xs text-red-600 font-bold" role="alert">
+                        <p className="text-[10px] text-red-600 font-bold" role="alert">
                           {errors.confirmPassword}
                         </p>
                       )}
@@ -502,15 +509,15 @@ export function LoginForm() {
 
                   {/* Email Not Confirmed Alert */}
                   {showResend && (
-                    <Alert variant="destructive" className="flex gap-2 bg-red-50 border-2 border-red-200">
-                      <AlertDescription className="flex-1 text-sm text-red-900 font-bold">
+                    <Alert variant="destructive" className="flex gap-2 bg-red-50 border-2 border-red-200 py-1.5 px-3">
+                      <AlertDescription className="flex-1 text-xs text-red-900 font-bold">
                         Email not confirmed.{' '}
                         <button
                           type="button"
                           onClick={handleResendConfirmation}
-                          className="underline hover:no-underline text-sm font-extrabold"
+                          className="underline hover:no-underline text-xs font-extrabold"
                         >
-                          Resend confirmation email
+                          Resend email
                         </button>
                       </AlertDescription>
                     </Alert>
@@ -519,7 +526,7 @@ export function LoginForm() {
                   {/* Submit Button */}
                   <Button
                     type="submit"
-                    className="w-full lg-btn-primary rounded-xl h-12 font-bold text-sm transition-all cursor-pointer shadow-md hover:shadow-lg mt-2"
+                    className={cn('w-full lg-btn-primary rounded-xl font-bold text-xs md:text-sm transition-all cursor-pointer shadow-md hover:shadow-lg mt-1', isSignUp ? 'h-10' : 'h-11')}
                     disabled={isSubmitting || authLoading}
                     size="default"
                   >
@@ -534,30 +541,32 @@ export function LoginForm() {
                   </Button>
 
                   {/* Links */}
-                  <div className="flex items-center justify-center gap-4 pt-2">
-                    <a
-                      href="#"
-                      className="text-xs text-slate-600 underline hover:text-[#001941] font-bold"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        toast.info('Contact your administrator for password reset')
-                      }}
-                    >
-                      Forgot password?
-                    </a>
+                  <div className="flex items-center justify-center gap-3 pt-1">
+                    {!isSignUp && (
+                      <a
+                        href="#"
+                        className="text-xs text-slate-600 underline hover:text-[#001941] font-bold"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          toast.info('Contact your administrator for password reset')
+                        }}
+                      >
+                        Forgot password?
+                      </a>
+                    )}
                     {staffTab === 'faculty' && (
                       <>
-                        <span className="text-slate-300">|</span>
+                        {!isSignUp && <span className="text-slate-300">|</span>}
                         <a
                           href="#"
-                          className="text-xs text-[#001941] hover:underline font-bold"
+                          className="text-xs text-[#001941] hover:underline font-extrabold"
                           onClick={(e) => {
                             e.preventDefault()
                             setIsSignUp(!isSignUp)
                             setErrors({})
                           }}
                         >
-                          {isSignUp ? 'Back to login' : 'Create new account'}
+                          {isSignUp ? '← Back to login' : 'Create new account'}
                         </a>
                       </>
                     )}

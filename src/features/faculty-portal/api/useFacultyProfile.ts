@@ -32,28 +32,28 @@ export function useFacultyProfile() {
             name: row.faculty_name || user?.user_metadata?.full_name || 'Faculty Member',
             emp_id: row.emp_id || empId,
             department: row.department || departmentName || 'Department of Computer Science',
-            email: user?.email || `${row.emp_id?.toLowerCase()}@srmist.edu.in`,
-            mobile: row.mobile || user?.user_metadata?.mobile || '+91 9876543210',
+            email: user?.email || row.email_id || `${row.emp_id?.toLowerCase()}@srmist.edu.in`,
+            mobile: row.mobile_number || (user?.user_metadata?.mobile as string) || '+91 9876543210',
           }
         }
       }
 
-      // 2. Query faculty table by user_id
-      if (user?.id) {
+      // 2. Query faculty_assignments table by email_id
+      if (user?.email) {
         const { data: facultyRows } = await supabase
-          .from('faculty')
-          .select('*, departments(name)')
-          .eq('user_id', user.id)
+          .from('faculty_assignments')
+          .select('*')
+          .ilike('email_id', user.email)
           .limit(1)
 
         if (facultyRows && facultyRows.length > 0) {
-          const f = facultyRows[0] as any
+          const f = facultyRows[0]
           return {
-            name: f.name || user?.user_metadata?.full_name || 'Faculty Member',
+            name: f.faculty_name || (user?.user_metadata?.full_name as string) || 'Faculty Member',
             emp_id: f.emp_id || empId || 'EMP001',
-            department: f.departments?.name || departmentName || 'Academic Department',
-            email: f.email || user?.email || '',
-            mobile: f.phone || '+91 9876543210',
+            department: f.department || departmentName || 'Academic Department',
+            email: f.email_id || user.email,
+            mobile: f.mobile_number || '+91 9876543210',
           }
         }
       }

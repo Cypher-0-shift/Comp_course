@@ -80,7 +80,7 @@ export function useDepartmentDetail(departmentId: string | null) {
             faculty_name: row.faculty_name,
             emp_id: row.emp_id || '',
             mobile: row.mobile_number || null,
-            subject_id: row.subject_id || '',
+            subject_id: row.subject_code || '',
             subject_code: row.subject_code || '',
             subject_name: row.subject_name || '',
           });

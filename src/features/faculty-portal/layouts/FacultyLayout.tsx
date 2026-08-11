@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, LogOut, Sparkles, Menu, X, ChevronDown, User, Users, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LayoutDashboard, BookOpen, LogOut, Sparkles, Menu, X, ChevronDown, Users, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 
 export function FacultyLayout() {
@@ -289,7 +289,7 @@ export function FacultyLayout() {
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#001941] shrink-0" />
                 <span>
-                  Created by{' '}
+                  Developed by{' '}
                   <strong className="text-[#001941] font-bold">Sanjay Ganesh</strong> &{' '}
                   <strong className="text-[#001941] font-bold">Tushar Sinha</strong>{' '}
                   (3rd Year AIML) under the guidance of{' '}

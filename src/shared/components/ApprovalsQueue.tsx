@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileUp, Clock, CheckCircle2, XCircle, ChevronRight, Download } from 'lucide-react'
+import { FileUp, Clock, CheckCircle2, XCircle, ChevronRight } from 'lucide-react'
 
 import { useQuery } from '@tanstack/react-query'
 import { useSupabase } from '@/shared/hooks/useSupabase'
@@ -14,7 +14,7 @@ export function ApprovalsQueue({ role }: { role: 'faculty' | 'admin' | 'hod' | '
     queryFn: async () => {
       const { data } = await supabase
         .from('student_enrollments')
-        .select('subject_code, department_name, status, created_at')
+        .select('subject_code, program, status, created_at')
         .order('created_at', { ascending: false })
         .limit(20)
 

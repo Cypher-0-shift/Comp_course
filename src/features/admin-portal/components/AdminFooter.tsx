@@ -17,7 +17,7 @@ export function AdminFooter() {
         <div className="lg-pill-slate flex items-center gap-1.5 px-3.5 py-1.5">
           <Sparkles className="w-3.5 h-3.5 text-[#001941] shrink-0" />
           <span className="text-slate-600">
-            Created by{' '}
+            Developed by{' '}
             <strong className="text-[#001941] font-bold">Sanjay Ganesh</strong> &{' '}
             <strong className="text-[#001941] font-bold">Tushar Sinha</strong>{' '}
             (3rd Year AIML) under the guidance of{' '}

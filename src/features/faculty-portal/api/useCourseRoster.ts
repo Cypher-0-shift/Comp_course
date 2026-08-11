@@ -34,12 +34,12 @@ export function useCourseRoster(courseCode?: string, search: string = '') {
       if (error) throw error
 
       const students = (data || []).map((row, idx) => ({
-        id: row.student_id || `${row.register_no}-${idx}`,
+        id: row.id || `${row.register_no}-${idx}`,
         registerNo: row.register_no,
         name: row.student_name,
-        program: row.program || row.department_name || 'B.Tech CSE',
+        program: row.program || 'B.Tech CSE',
         status: row.status === 'completed' ? 'Completed' : 'Registered',
-        email: row.email,
+        email: row.email_id,
       })) as RosterStudentItem[]
 
       const courseName = (data || [])[0]?.subject_name || courseCode

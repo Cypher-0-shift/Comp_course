@@ -73,6 +73,25 @@
 }
 
 /* ============================================================
+   CUSTOM SLEEK SCROLLBAR UTILITY
+   ============================================================ */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 25, 65, 0.04);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 25, 65, 0.2);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 25, 65, 0.35);
+}
+
+/* ============================================================
    LIQUID GLASS DESIGN SYSTEM — per spec §1-§7
    ============================================================ */
 @layer components {

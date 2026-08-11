@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FacultyProfileCard, type FacultyProfile } from '../components/FacultyProfileCard'
-import { TrendingUp, Users, BookOpen, PieChart as PieIcon, BarChart2 } from 'lucide-react'
+import { Users, BookOpen, PieChart as PieIcon, BarChart2 } from 'lucide-react'
 import {
   ResponsiveContainer,
   PieChart,
@@ -23,7 +23,7 @@ const VIBGYOR_COLORS = ['#6366f1', '#06b6d4', '#f97316', '#10b981', '#ec4899', '
 // Custom pointer tooltip speech bubble targeting hovered slice or bar
 interface CustomTooltipProps {
   active?: boolean
-  payload?: any[]
+  payload?: readonly any[]
   totalStudents?: number
 }
 
@@ -318,21 +318,7 @@ export function FacultyDashboard() {
                 />
                 <Tooltip
                   cursor={{ fill: 'rgba(0, 25, 65, 0.04)' }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload
-                      return (
-                        <div className="rounded-xl bg-[#001941] p-3 shadow-xl text-white text-xs space-y-1">
-                          <p className="font-bold border-b border-white/20 pb-1">{data.name || data.course}</p>
-                          <p className="font-semibold text-amber-300 flex items-center justify-between gap-3 pt-0.5">
-                            <span>Students Registered:</span>
-                            <span className="font-extrabold text-sm text-white">{data.registered}</span>
-                          </p>
-                        </div>
-                      )
-                    }
-                    return null
-                  }}
+                  content={(props) => <CustomPointerTooltip {...props} totalStudents={totalStudentsRegistered} />}
                 />
                 <Bar
                   dataKey="registered"
@@ -367,19 +353,25 @@ export function FacultyDashboard() {
         </div>
 
         {/* Right: Dedicated Assigned Course Breakdown Card with Focus Isolation Sync */}
-        <div className="lg-card rounded-3xl p-5 md:p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
+        <div className="lg-card rounded-3xl p-5 md:p-6 flex flex-col h-[420px] overflow-hidden">
+          <div className="flex flex-col h-full">
+            {/* Proper Fixed Header with Badge & Divider */}
+            <div className="flex items-start justify-between gap-3 mb-3 pb-3 border-b border-slate-200/80 shrink-0">
               <div>
                 <h3 className="font-bold text-slate-900 text-base md:text-lg flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-indigo-600" />
+                  <BookOpen className="w-5 h-5 text-indigo-600 shrink-0" />
                   Assigned Courses Breakdown
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">Breakdown of students registered for assigned courses</p>
               </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs shrink-0">
+                <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                {courseDistribution.length} {courseDistribution.length === 1 ? 'Course' : 'Courses'}
+              </span>
             </div>
 
-            <div className="space-y-3">
+            {/* Scrollable Container with Custom Scrollbar */}
+            <div className="flex-1 overflow-y-auto pr-1.5 space-y-2.5 custom-scrollbar">
               {courseDistribution.map((item, index) => {
                 const percentage = totalStudentsRegistered > 0
                   ? ((item.value / totalStudentsRegistered) * 100).toFixed(0)
