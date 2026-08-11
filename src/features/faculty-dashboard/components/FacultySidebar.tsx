@@ -1,4 +1,4 @@
-import { LayoutDashboard, GraduationCap, Building2, LogOut } from 'lucide-react'
+import { LayoutDashboard, GraduationCap, Building2, LogOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { cn } from '@/shared/utils/cn'
 
@@ -8,13 +8,14 @@ interface FacultySidebarProps {
   activeTab: FacultyTabType
   onTabChange: (tab: FacultyTabType) => void
   collapsed: boolean
-  onToggleCollapse?: () => void
+  onToggleCollapse: () => void
 }
 
 export function FacultySidebar({
   activeTab,
   onTabChange,
   collapsed,
+  onToggleCollapse,
 }: FacultySidebarProps) {
   const { signOut } = useAuth()
 
@@ -50,6 +51,14 @@ export function FacultySidebar({
         collapsed ? '-translate-x-full md:translate-x-0 md:w-16' : 'translate-x-0 w-64'
       )}
     >
+      {/* Collapse Toggle Button */}
+      <button
+        onClick={onToggleCollapse}
+        className="absolute -right-3 top-6 hidden md:flex h-6 w-6 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-slate-300 shadow-md transition hover:border-indigo-500 hover:text-white cursor-pointer"
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+      </button>
 
       {/* Sidebar Header Branding */}
       <div className={cn('flex items-center gap-3 px-4 py-5 border-b border-slate-800/80', collapsed && 'md:justify-center md:px-2')}>

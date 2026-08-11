@@ -1,7 +1,6 @@
-import { Mail, Phone, UserCheck, X, Copy, Check, Building2, BookOpen } from 'lucide-react'
+import { Mail, Phone, User, X, Copy, Check, Building2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 
 export interface FacultyInfo {
   name: string
@@ -10,6 +9,9 @@ export interface FacultyInfo {
   subjectCode: string
   subjectName: string
   departmentName?: string
+  credits?: number
+  status?: string
+  empId?: string
 }
 
 interface FacultyContactModalProps {
@@ -30,128 +32,110 @@ export function FacultyContactModal({ isOpen, onClose, faculty }: FacultyContact
     setTimeout(() => setCopiedField(null), 2000)
   }
 
-  const initials = faculty.name
-    ? faculty.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase()
-    : 'FC'
+  const detailRows: { icon: typeof Mail; label: string; value: string; href?: string; copyKey?: string }[] = [
+    { icon: User,     label: 'Name',  value: faculty.name },
+    { icon: Mail,     label: 'Email', value: faculty.email, href: `mailto:${faculty.email}`, copyKey: 'Faculty Email' },
+    { icon: Phone,    label: 'Phone', value: faculty.phone || 'Not available', copyKey: faculty.phone ? 'Faculty Phone' : undefined },
+    ...(faculty.departmentName
+      ? [{ icon: Building2, label: 'Department', value: faculty.departmentName }]
+      : []),
+  ]
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+      style={{ background: 'rgba(15, 23, 42, 0.35)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Faculty details for ${faculty.name}`}
     >
-      <div 
-        className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200"
+      <div
+        className="lg-modal w-full max-w-2xl animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Header Background */}
-        <div className="relative bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 p-6 text-white">
+        {/* Modal header — navy bg */}
+        <div className="relative bg-srm-primary px-6 py-5 flex items-start justify-between gap-4">
+          <div>
+            {/* Course name */}
+            <h2 className="text-xl md:text-2xl font-bold text-srm-on-primary leading-snug tracking-tight mb-2.5">
+              {faculty.subjectName}
+            </h2>
+
+            {/* Course code chip below course name */}
+            <div className="flex items-center flex-wrap gap-2">
+              <span className="text-xs font-semibold tracking-wider border border-srm-primary-fixed/40 text-srm-primary-fixed bg-srm-primary-dim px-3 py-1 rounded-full">
+                Code: {faculty.subjectCode}
+              </span>
+            </div>
+          </div>
+
+          {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-srm-on-primary transition-colors cursor-pointer shrink-0 mt-0.5"
             aria-label="Close dialog"
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
 
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white text-indigo-700 font-extrabold text-xl flex items-center justify-center shadow-lg ring-4 ring-white/20">
-              {initials}
-            </div>
-            <div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100/20 text-indigo-100 backdrop-blur-xs border border-indigo-200/30">
-                <UserCheck className="w-3 h-3 text-emerald-300" />
-                Assigned Faculty
-              </span>
-              <h3 className="text-lg font-bold tracking-tight text-white mt-0.5">{faculty.name}</h3>
-              <p className="text-xs text-indigo-100/90 flex items-center gap-1">
-                <BookOpen className="w-3 h-3" /> {faculty.subjectCode} — {faculty.subjectName}
-              </p>
-            </div>
+        {/* Modal body */}
+        <div className="p-6">
+          {/* Section title */}
+          <h3 className="text-xs font-bold text-srm-primary uppercase tracking-wider mb-4">
+            ASSIGNED FACULTY DETAILS
+          </h3>
+
+          {/* Faculty info glass card */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg-card rounded-2xl p-5 border border-white/80 bg-white/70 backdrop-blur-xl shadow-md">
+            {detailRows.map((row) => {
+              const Icon = row.icon
+              return (
+                <div key={row.label} className="flex flex-col gap-1 min-w-0">
+                  <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-500 flex items-center gap-1.5">
+                    <Icon className="w-3.5 h-3.5 text-srm-primary shrink-0" />
+                    {row.label}
+                  </span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {row.href ? (
+                      <a
+                        href={row.href}
+                        className="text-sm font-bold text-srm-primary underline hover:no-underline break-words-safe min-w-0"
+                      >
+                        {row.value}
+                      </a>
+                    ) : (
+                      <span className="text-sm font-bold text-slate-900 break-words-safe min-w-0">{row.value}</span>
+                    )}
+                    {row.copyKey && row.value !== 'Not available' && (
+                      <button
+                        onClick={() => handleCopy(row.value, row.copyKey!)}
+                        className="text-slate-400 hover:text-srm-primary transition-colors cursor-pointer shrink-0 p-1 hover:bg-slate-100/60 rounded-md"
+                        title={`Copy ${row.label}`}
+                        aria-label={`Copy ${row.label}`}
+                      >
+                        {copiedField === row.copyKey ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 space-y-4">
-          <div className="space-y-3">
-            {/* Email item */}
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/70 rounded-xl">
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <div className="overflow-hidden">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Email Address</p>
-                  <p className="text-sm font-semibold text-slate-900 truncate">{faculty.email}</p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2.5 text-slate-500 hover:text-indigo-600 cursor-pointer"
-                onClick={() => handleCopy(faculty.email, 'Faculty Email')}
-              >
-                {copiedField === 'Faculty Email' ? (
-                  <Check className="w-4 h-4 text-emerald-600" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-
-            {/* Phone item */}
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/70 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600">
-                  <Phone className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Phone Number</p>
-                  <p className="text-sm font-semibold text-slate-900">{faculty.phone || 'Not available'}</p>
-                </div>
-              </div>
-              {faculty.phone && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2.5 text-slate-500 hover:text-indigo-600 cursor-pointer"
-                  onClick={() => handleCopy(faculty.phone, 'Faculty Phone')}
-                >
-                  {copiedField === 'Faculty Phone' ? (
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </Button>
-              )}
-            </div>
-
-            {/* Department item */}
-            {faculty.departmentName && (
-              <div className="flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-200/70 rounded-xl">
-                <div className="p-2 rounded-lg bg-slate-100 text-slate-600">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Department</p>
-                  <p className="text-sm font-semibold text-slate-900">{faculty.departmentName}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-2">
-            <Button
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-xl h-10 transition-colors cursor-pointer"
-              onClick={onClose}
-            >
-              Close Details
-            </Button>
-          </div>
+        <div className="px-6 pb-6 border-t border-white/40 flex justify-end pt-4" style={{ background: 'rgba(255, 255, 255, 0.40)' }}>
+          <button
+            onClick={onClose}
+            className="px-6 py-2.5 rounded-xl lg-btn-primary text-sm font-semibold cursor-pointer"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

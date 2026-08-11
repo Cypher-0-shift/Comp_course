@@ -9,8 +9,14 @@ interface FacultyHeaderProps {
 export function FacultyHeader({ sidebarOpen, onToggleSidebar }: FacultyHeaderProps) {
   const { user, signOut } = useAuth()
 
-  const displayName = user?.email?.split('@')[0] ?? 'Faculty'
-  const initial = displayName.charAt(0).toUpperCase()
+  const userMetaDataName = (user?.user_metadata?.name as string) || (user?.app_metadata?.name as string)
+  const emailPrefix = user?.email?.split('@')[0] ?? ''
+  const displayName = userMetaDataName || (emailPrefix ? emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1) : 'Faculty')
+
+  const words = displayName.trim().split(/\s+/)
+  const initial = words.length >= 2 
+    ? (words[0][0] + words[words.length - 1][0]).toUpperCase() 
+    : displayName.substring(0, 2).toUpperCase()
 
   return (
     <header className="sticky top-0 z-30 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-b border-slate-800 text-white shadow-md">

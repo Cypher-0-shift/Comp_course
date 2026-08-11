@@ -37,9 +37,9 @@ function SelectField({ id, label, value, options, onChange }: SelectFieldProps) 
         id={id}
         className={cn(
           'flex h-12 md:h-9 w-full md:w-auto md:min-w-[140px] items-center justify-between gap-1.5 rounded-lg',
-          'border border-white/10 bg-white/5 px-3 text-sm text-slate-200',
-          'outline-none transition hover:bg-white/10 focus:border-indigo-400/50 focus:ring-1 focus:ring-indigo-400/30',
-          value && 'border-indigo-400/40 bg-indigo-500/10 text-indigo-300'
+          'border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm',
+          'outline-none transition hover:bg-slate-50 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30',
+          value && 'border-indigo-300 bg-indigo-50 text-indigo-700'
         )}
         aria-label={label}
       >
@@ -51,14 +51,14 @@ function SelectField({ id, label, value, options, onChange }: SelectFieldProps) 
 
       <Select.Portal>
         <Select.Content
-          className="z-50 min-w-[160px] overflow-hidden rounded-xl border border-white/10 bg-slate-900 shadow-2xl"
+          className="z-50 min-w-[160px] max-h-[300px] overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
           position="popper"
           sideOffset={4}
         >
           <Select.Viewport className="p-1">
             <Select.Item
               value="all"
-              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400 outline-none hover:bg-white/5 hover:text-slate-200 data-[state=checked]:text-indigo-300"
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-500 outline-none hover:bg-slate-50 hover:text-slate-900 data-[state=checked]:text-indigo-600 data-[state=checked]:font-medium"
             >
               <Select.ItemIndicator>
                 <Check className="h-3.5 w-3.5" />
@@ -69,7 +69,7 @@ function SelectField({ id, label, value, options, onChange }: SelectFieldProps) 
               <Select.Item
                 key={opt.value}
                 value={opt.value}
-                className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none hover:bg-white/5 data-[state=checked]:text-indigo-300"
+                className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 outline-none hover:bg-slate-50 hover:text-slate-900 data-[state=checked]:text-indigo-600 data-[state=checked]:font-medium"
               >
                 <Select.ItemIndicator>
                   <Check className="h-3.5 w-3.5" />
@@ -128,7 +128,7 @@ export function FilterBar({ filters, options, onChange, onReset }: FilterBarProp
       {hasActiveFilter && (
         <button
           onClick={onReset}
-          className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-400 transition hover:border-red-400/30 hover:text-red-400"
+          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
         >
           Clear filters
         </button>

@@ -137,11 +137,6 @@ export function AnalyticsChartsSection() {
                   const heightPercent = Math.max(12, Math.round((item.count / maxStudentCount) * 100))
                   return (
                     <div key={idx} className="group relative flex-1 flex flex-col items-center h-full justify-end max-w-[56px]">
-                      {/* Hover Tooltip */}
-                      <div className="absolute -top-9 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-30 rounded-md bg-slate-900 border border-slate-700 px-2 py-0.5 text-[10px] text-white shadow-xl whitespace-nowrap">
-                        <span className="font-bold text-indigo-300">{item.name}:</span> {item.count}
-                      </div>
-
                       {/* Bar Fill */}
                       <div
                         style={{ height: `${heightPercent}%` }}

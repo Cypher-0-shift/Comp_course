@@ -1,14 +1,14 @@
-import { LayoutDashboard, Users, Upload, LogOut, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, Users, Upload, LogOut, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { cn } from '@/shared/utils/cn'
 
 interface AdminSidebarProps {
   collapsed: boolean
-  onToggleCollapse?: () => void
+  onToggleCollapse: () => void
 }
 
-export function AdminSidebar({ collapsed }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed, onToggleCollapse }: AdminSidebarProps) {
   const { role, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -18,7 +18,7 @@ export function AdminSidebar({ collapsed }: AdminSidebarProps) {
   const navItems = [
     {
       path: '/admin',
-      label: role === 'hod' ? 'Department Dashboard' : 'Department Overview',
+      label: 'Department Overview',
       shortLabel: 'Overview',
       icon: LayoutDashboard,
       badge: 'Main',
@@ -42,27 +42,35 @@ export function AdminSidebar({ collapsed }: AdminSidebarProps) {
   return (
     <aside
       className={cn(
-        'flex flex-col border-r border-slate-800 bg-slate-900 text-slate-300 transition-all duration-300 ease-in-out z-50 shrink-0 select-none shadow-2xl md:shadow-md',
+        'lg-sidebar flex flex-col transition-all duration-300 ease-in-out z-50 shrink-0 select-none',
         'fixed inset-y-0 left-0 md:relative',
-        collapsed ? '-translate-x-full md:translate-x-0 md:w-16' : 'translate-x-0 w-64'
+        collapsed ? '-translate-x-full md:translate-x-0 md:w-[76px]' : 'translate-x-0 w-[250px]'
       )}
     >
+      {/* Collapse Toggle Button */}
+      <button
+        onClick={onToggleCollapse}
+        className="absolute -right-3 top-6 hidden md:flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-md transition hover:border-[#001941]/30 hover:text-[#001941] cursor-pointer"
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+      </button>
 
       {/* Sidebar Header Branding */}
-      <div className={cn('flex items-center gap-3 px-4 py-5 border-b border-slate-800/80', collapsed && 'md:justify-center md:px-2')}>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-600/30 text-violet-400 ring-1 ring-violet-500/40">
-          <ShieldCheck className="h-5 w-5 text-violet-400" />
+      <div className={cn('flex items-center gap-3 px-4 py-5 border-b border-slate-200/70', collapsed && 'md:justify-center md:px-2')}>
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#001941]/10 border border-[#001941]/15">
+          <ShieldCheck className="h-5 w-5 text-[#001941]" />
         </div>
         <div className={cn('overflow-hidden whitespace-nowrap', collapsed ? 'block md:hidden' : 'block')}>
-          <p className="text-xs font-bold uppercase tracking-wider text-violet-400">{roleLabel} Portal</p>
-          <p className="text-sm font-semibold text-white">Management UI</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#001941]">{roleLabel} Portal</p>
+          <p className="text-sm font-semibold text-slate-700">Management UI</p>
         </div>
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 space-y-1.5 p-3">
-        <p className={cn('px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2', collapsed ? 'block md:hidden' : 'block')}>
-          Navigation Menu
+      <nav className="flex-1 space-y-1.5 p-3" aria-label="Admin navigation">
+        <p className={cn('px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2', collapsed ? 'block md:hidden' : 'block')}>
+          Navigation
         </p>
         {navItems.map((item) => {
           const Icon = item.icon
@@ -76,10 +84,10 @@ export function AdminSidebar({ collapsed }: AdminSidebarProps) {
               id={`admin-sidebar-nav-${item.shortLabel.toLowerCase()}`}
               onClick={() => navigate(item.path)}
               className={cn(
-                'group relative flex w-full items-center gap-3 rounded-xl px-3 py-3 md:py-2.5 text-sm font-medium transition-all duration-150 cursor-pointer min-h-[48px]',
+                'group relative flex w-full items-center gap-3 rounded-xl px-3 py-3 md:py-2.5 text-sm font-semibold transition-all duration-150 cursor-pointer min-h-[48px]',
                 isActive
-                  ? 'bg-violet-600 text-white shadow-md shadow-violet-950/60 ring-1 ring-violet-400/40'
-                  : 'text-slate-400 hover:bg-slate-800/80 hover:text-white',
+                  ? 'lg-nav-active text-white'
+                  : 'text-slate-600 hover:bg-[#001941]/8 hover:text-[#001941]',
                 collapsed && 'md:justify-center md:px-0'
               )}
               title={collapsed ? item.label : undefined}
@@ -87,7 +95,7 @@ export function AdminSidebar({ collapsed }: AdminSidebarProps) {
               <Icon
                 className={cn(
                   'h-5 w-5 shrink-0 transition-transform duration-150 group-hover:scale-105',
-                  isActive ? 'text-white' : 'text-slate-400 group-hover:text-violet-400'
+                  isActive ? 'text-white' : 'text-slate-400 group-hover:text-[#001941]'
                 )}
               />
               <div className={cn('flex flex-1 items-center justify-between overflow-hidden', collapsed ? 'flex md:hidden' : 'flex')}>
@@ -95,8 +103,10 @@ export function AdminSidebar({ collapsed }: AdminSidebarProps) {
                 {item.badge && (
                   <span
                     className={cn(
-                      'rounded-full px-2 py-0.5 text-[10px] font-semibold',
-                      isActive ? 'bg-violet-700 text-violet-100' : 'bg-slate-800 text-slate-400 border border-slate-700/60'
+                      'rounded-full px-2 py-0.5 text-[10px] font-bold',
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-100 text-slate-500 border border-slate-200/80'
                     )}
                   >
                     {item.badge}
@@ -108,19 +118,19 @@ export function AdminSidebar({ collapsed }: AdminSidebarProps) {
         })}
       </nav>
 
-      {/* Fixed Bottom Logout Section */}
-      <div className="border-t border-slate-800/80 p-3">
+      {/* Bottom Logout */}
+      <div className="border-t border-slate-200/70 p-3">
         <button
           id="admin-sidebar-logout-btn"
           onClick={() => signOut()}
           className={cn(
-            'flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-3 md:py-2.5 text-sm font-medium text-slate-400 transition-all duration-150 hover:border-rose-500/40 hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer min-h-[48px]',
+            'lg-btn-logout flex w-full items-center gap-3 px-3 py-3 md:py-2.5 text-sm font-semibold cursor-pointer min-h-[48px] rounded-xl',
             collapsed && 'md:justify-center md:px-0'
           )}
           title={collapsed ? 'Logout' : undefined}
         >
-          <LogOut className="h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-rose-400" />
-          <span className={cn('font-semibold', collapsed ? 'inline md:hidden' : 'inline')}>Logout</span>
+          <LogOut className="h-4 w-4 shrink-0" />
+          <span className={cn(collapsed ? 'inline md:hidden' : 'inline')}>Logout</span>
         </button>
       </div>
     </aside>

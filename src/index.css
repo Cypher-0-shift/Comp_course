@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -54,7 +56,505 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'SF Pro', 'Plus Jakarta Sans', sans-serif;
+    font-optical-sizing: auto;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  }
+}
+
+/* ============================================================
+   CUSTOM SLEEK SCROLLBAR UTILITY
+   ============================================================ */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 25, 65, 0.04);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 25, 65, 0.2);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 25, 65, 0.35);
+}
+
+/* ============================================================
+   LIQUID GLASS DESIGN SYSTEM — per spec §1-§7
+   ============================================================ */
+@layer components {
+
+  /* ----------------------------------------------------------
+     BASE GLASS RECIPE (core material — used as foundation)
+     Blur=24px, opacity=0.55, full specular inset highlight
+  ---------------------------------------------------------- */
+  /* ----------------------------------------------------------
+     BASE GLASS RECIPE (core material — used as foundation)
+     Blur=24px, opacity=0.55, full specular inset highlight
+  ---------------------------------------------------------- */
+  .lg-base {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(203, 213, 225, 0.75);
+    border-radius: 24px;
+    box-shadow:
+      0 8px 32px rgba(15, 23, 42, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.90);
+  }
+
+  /* ----------------------------------------------------------
+     HEADER BAR — Top layer, high-blur, sticky
+     Blur=24px, opacity=0.55 (see-through, floats above content)
+  ---------------------------------------------------------- */
+  .lg-header {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid rgba(203, 213, 225, 0.85);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.95),
+      0 4px 20px rgba(15, 23, 42, 0.05);
+  }
+
+  /* ----------------------------------------------------------
+     SIDEBAR — Top layer, high-blur, full-height
+     Blur=28px, opacity=0.5; active nav pill is higher opacity
+  ---------------------------------------------------------- */
+  .lg-sidebar {
+    background: rgba(255, 255, 255, 0.70);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border-right: 1px solid rgba(203, 213, 225, 0.85);
+    box-shadow:
+      4px 0 24px rgba(15, 23, 42, 0.04),
+      inset -1px 0 0 rgba(255, 255, 255, 0.90);
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.80) 0%,
+      rgba(255, 255, 255, 0.25) 40%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    background-blend-mode: overlay;
+  }
+
+  /* Active nav pill inside sidebar — nested glass, higher opacity (§4) */
+  .lg-nav-active {
+    background: rgba(0, 25, 65, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow:
+      0 4px 12px rgba(0, 25, 65, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.20);
+  }
+
+  /* ----------------------------------------------------------
+     MID-LAYER PANELS — LIGHT CRYSTAL LIQUID GLASS
+     Translucent white liquid material over light silver backdrop
+     Clear SRM watermark visibility & specular water-like sheen
+  ---------------------------------------------------------- */
+  .lg-card {
+    background: rgba(255, 255, 255, 0.38);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid rgba(203, 213, 225, 0.75);
+    border-radius: 24px;
+    box-shadow:
+      0 10px 32px rgba(15, 23, 42, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.88),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.30);
+    position: relative;
+    overflow: hidden;
+  }
+  .lg-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.60) 0%,
+      rgba(255, 255, 255, 0.10) 40%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+  .lg-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .lg-card-hover {
+    transition: all 220ms ease-out;
+  }
+  .lg-card-hover:hover {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(32px) saturate(210%);
+    -webkit-backdrop-filter: blur(32px) saturate(210%);
+    box-shadow:
+      0 16px 40px rgba(15, 23, 42, 0.09),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transform: translateY(-3px);
+    border-color: rgba(148, 163, 184, 0.80);
+  }
+  .lg-card-hover:active {
+    background: rgba(255, 255, 255, 0.62);
+    transform: translateY(0px) scale(0.99);
+    transition: all 100ms ease-out;
+  }
+
+  /* ----------------------------------------------------------
+     DATA TABLE CONTAINER — very low blur (8px), high opacity (0.85)
+     Tables need maximum legibility
+  ---------------------------------------------------------- */
+  .lg-table-container {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+    /* Crisp table boundary */
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    border-radius: 24px;
+    box-shadow:
+      0 0 0 0.5px rgba(148, 163, 184, 0.20),
+      0 4px 20px rgba(15, 23, 42, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.90);
+  }
+
+  /* ----------------------------------------------------------
+     MODAL / DIALOG — top layer, high-blur (28px), opacity 0.55
+     Full specular highlight (§4)
+  ---------------------------------------------------------- */
+  .lg-modal {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(203, 213, 225, 0.90);
+    border-radius: 24px;
+    box-shadow:
+      0 24px 64px rgba(15, 23, 42, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    position: relative;
+    overflow: hidden;
+  }
+  .lg-modal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0.15) 30%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+  .lg-modal > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ----------------------------------------------------------
+     STAT BADGES / PILL — small glass, low blur (10px), r=16px
+     No specular overlay (too small — reads as noise §4)
+  ---------------------------------------------------------- */
+  .lg-pill-slate {
+    background: rgba(255, 255, 255, 0.80);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    /* Visible pill outline */
+    border: 1px solid rgba(148, 163, 184, 0.40);
+    border-radius: 999px;
+    box-shadow:
+      0 2px 8px rgba(15, 23, 42, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transition: all 200ms ease-out;
+  }
+  .lg-pill-slate:hover {
+    background: rgba(255, 255, 255, 0.88);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  /* Accent-tinted glass pill — soft blue tint (replaces gold per §5) */
+  .lg-pill-blue {
+    background: rgba(219, 234, 254, 0.72);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    border: 1px solid rgba(191, 219, 254, 0.75);
+    border-radius: 999px;
+    box-shadow:
+      0 4px 12px rgba(59, 130, 246, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: all 200ms ease-out;
+  }
+  .lg-pill-blue:hover {
+    background: rgba(219, 234, 254, 0.88);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  /* ----------------------------------------------------------
+     LIQUID GLASS BUTTON SYSTEM — Primary, Destructive, Ghost
+  ---------------------------------------------------------- */
+  .lg-btn-primary {
+    background: rgba(0, 25, 65, 0.90);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 14px;
+    color: #ffffff;
+    box-shadow:
+      0 4px 16px rgba(0, 25, 65, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.30);
+    transition: all 200ms ease-out;
+  }
+  .lg-btn-primary:hover {
+    background: rgba(0, 25, 65, 0.98);
+    box-shadow:
+      0 6px 20px rgba(0, 25, 65, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.40);
+    transform: translateY(-1px);
+  }
+  .lg-btn-primary:active {
+    transform: scale(0.98);
+    transition: all 100ms ease-out;
+  }
+
+  .lg-btn-destructive {
+    background: rgba(225, 29, 72, 0.88);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.30);
+    border-radius: 14px;
+    color: #ffffff;
+    box-shadow:
+      0 4px 14px rgba(225, 29, 72, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: all 200ms ease-out;
+  }
+  .lg-btn-destructive:hover {
+    background: rgba(225, 29, 72, 0.96);
+    box-shadow:
+      0 6px 18px rgba(225, 29, 72, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    transform: translateY(-1px);
+  }
+  .lg-btn-destructive:active {
+    transform: scale(0.98);
+    transition: all 100ms ease-out;
+  }
+
+  /* Subtle liquid glass logout button — clean resting state, turns red on hover */
+  .lg-btn-logout {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.70);
+    border-radius: 12px;
+    color: #475569;
+    box-shadow:
+      0 2px 10px rgba(15, 23, 42, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: all 200ms ease-out;
+  }
+  .lg-btn-logout:hover {
+    background: rgba(225, 29, 72, 0.90);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.40);
+    box-shadow:
+      0 6px 18px rgba(225, 29, 72, 0.30),
+      inset 0 1px 0 rgba(255, 255, 255, 0.40);
+    transform: translateY(-1px);
+  }
+  .lg-btn-logout:active {
+    transform: scale(0.98);
+    transition: all 100ms ease-out;
+  }
+
+  .lg-btn-ghost {
+    background: rgba(255, 255, 255, 0.60);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 12px;
+    box-shadow:
+      0 4px 16px rgba(15, 23, 42, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    transition: all 200ms ease-out;
+  }
+  .lg-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+  }
+  .lg-btn-ghost:active {
+    background: rgba(255, 255, 255, 0.88);
+    transform: scale(0.98);
+    transition: all 100ms ease-out;
+  }
+
+  /* ----------------------------------------------------------
+     DROPDOWN / POPOVER — top layer glass
+  ---------------------------------------------------------- */
+  .lg-dropdown {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid rgba(203, 213, 225, 0.90);
+    border-radius: 20px;
+    box-shadow:
+      0 16px 48px rgba(15, 23, 42, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  /* ----------------------------------------------------------
+     FOOTER — bottom glass bar
+  ---------------------------------------------------------- */
+  .lg-footer {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-top: 1px solid rgba(203, 213, 225, 0.80);
+    box-shadow:
+      0 -1px 0 rgba(255, 255, 255, 0.90),
+      0 -4px 20px rgba(15, 23, 42, 0.03);
+  }
+
+  /* ----------------------------------------------------------
+     MOBILE BOTTOM NAV — bottom-pinned glass bar
+  ---------------------------------------------------------- */
+  .lg-mobile-nav {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    border-top: 1px solid rgba(203, 213, 225, 0.85);
+    box-shadow:
+      0 -2px 16px rgba(15, 23, 42, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  /* ----------------------------------------------------------
+     @supports fallback — solid surface when backdrop-filter unavailable
+  ---------------------------------------------------------- */
+  @supports not (backdrop-filter: blur(1px)) {
+    .lg-base, .lg-card, .lg-card-hover { background: rgba(255, 255, 255, 0.97); }
+    .lg-header { background: rgba(255, 255, 255, 0.98); }
+    .lg-sidebar { background: rgba(255, 255, 255, 0.97); }
+    .lg-modal { background: rgba(255, 255, 255, 0.97); }
+    .lg-footer { background: rgba(255, 255, 255, 0.97); }
+    .lg-mobile-nav { background: rgba(255, 255, 255, 0.98); }
+    .lg-pill-slate { background: rgba(255, 255, 255, 0.98); }
+    .lg-pill-blue { background: rgba(219, 234, 254, 0.98); }
+    .lg-btn-ghost { background: rgba(248, 250, 252, 0.99); }
+    .lg-dropdown { background: rgba(255, 255, 255, 0.99); }
+    .lg-table-container { background: rgba(255, 255, 255, 0.99); }
+  }
+
+  /* ----------------------------------------------------------
+     @media: reduced motion / reduced transparency
+  ---------------------------------------------------------- */
+  @media (prefers-reduced-motion: reduce) {
+    .lg-card-hover, .lg-pill-slate, .lg-pill-blue, .lg-btn-ghost {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .lg-base, .lg-card { background: rgba(255, 255, 255, 0.97); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .lg-header { background: rgba(255, 255, 255, 0.98); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .lg-sidebar { background: rgba(255, 255, 255, 0.97); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .lg-modal { background: rgba(255, 255, 255, 0.97); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
+
+  /* Legacy aliases — so existing glass-panel refs still work */
+  .glass-panel { @apply lg-card; }
+  .glass-panel-hover { @apply lg-card-hover; }
+  .glass-sidebar { @apply lg-sidebar; }
+  .glass-header { @apply lg-header; }
+  .liquid-glass-panel { @apply lg-card; }
+  .liquid-glass-hover { @apply lg-card-hover; }
+  .liquid-glass-header { @apply lg-header; }
+  .liquid-glass-sidebar { @apply lg-sidebar; }
+  .liquid-pill-slate { @apply lg-pill-slate; }
+  .liquid-pill-blue { @apply lg-pill-blue; }
+}
+
+@layer utilities {
+  .break-words-safe {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .flex-text-child {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  .table-container-safe {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .font-display {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'SF Pro', 'Plus Jakarta Sans', sans-serif;
+    font-optical-sizing: auto;
+  }
+  .font-body {
+    font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  }
+  .font-meta {
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif;
+  }
+  .font-mono-apple {
+    font-family: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  .font-rounded {
+    font-family: 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  .app-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background: 
+      radial-gradient(
+        ellipse 80% 60% at 50% 120%,
+        rgba(0, 25, 65, 0.08) 0%,
+        rgba(11, 46, 99, 0.04) 40%,
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 60% 40% at 80% 20%,
+        rgba(218, 165, 32, 0.05) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 70% 50% at 20% 80%,
+        rgba(0, 25, 65, 0.06) 0%,
+        transparent 60%
+      ),
+      #f8fafc;
+    animation: ambient-shift 18s ease-in-out infinite alternate;
+    background-size: 200% 200%;
+  }
+}
+
+@keyframes ambient-shift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 50% 100%; }
 }

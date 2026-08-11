@@ -239,16 +239,16 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
             </div>
           ) : (
             /* Dense Table Layout */
-            <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 shadow-xl">
+            <div className="table-container-safe rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 shadow-xl">
               <table className="w-full text-sm text-left text-slate-200">
-                <thead className="text-xs text-indigo-300 uppercase bg-slate-950/90 border-b border-slate-800 font-bold tracking-wider">
+                <thead className="text-xs text-indigo-300 uppercase bg-slate-950/90 border-b border-slate-800 font-extrabold tracking-wider">
                   <tr>
-                    <th scope="col" className="px-5 py-3.5">Code</th>
-                    <th scope="col" className="px-5 py-3.5">Subject Name</th>
-                    <th scope="col" className="px-5 py-3.5">Status</th>
-                    <th scope="col" className="px-5 py-3.5">Assigned Faculty</th>
-                    <th scope="col" className="px-5 py-3.5">Contact Email & Phone</th>
-                    <th scope="col" className="px-5 py-3.5 text-right">Actions</th>
+                    <th scope="col" className="px-5 py-3.5 whitespace-nowrap font-extrabold">CODE</th>
+                    <th scope="col" className="px-5 py-3.5 font-extrabold">SUBJECT NAME</th>
+                    <th scope="col" className="px-5 py-3.5 font-extrabold">STATUS</th>
+                    <th scope="col" className="px-5 py-3.5 font-extrabold">ASSIGNED FACULTY</th>
+                    <th scope="col" className="px-5 py-3.5 font-extrabold">CONTACT EMAIL & PHONE</th>
+                    <th scope="col" className="px-5 py-3.5 text-right font-extrabold">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
@@ -261,13 +261,13 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
                         key={enrollment.id} 
                         className="hover:bg-indigo-900/30 transition-colors"
                       >
-                        <td className="px-5 py-4 font-mono font-bold text-indigo-300">
+                        <td className="px-5 py-4 font-mono font-bold text-indigo-300 whitespace-nowrap">
                           {enrollment.subject?.code || 'N/A'}
                         </td>
-                        <td className="px-5 py-4 font-medium text-slate-100">
+                        <td className="px-5 py-4 font-medium text-slate-100 break-words-safe min-w-[180px]">
                           {enrollment.subject?.name || 'N/A'}
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-5 py-4 whitespace-nowrap">
                           <Badge 
                             variant={enrollment.status === 'completed' ? 'default' : 'secondary'}
                             className={`capitalize text-xs font-semibold px-2.5 py-0.5 rounded-full ${
@@ -279,20 +279,20 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
                             {enrollment.status}
                           </Badge>
                         </td>
-                        <td className="px-5 py-4 font-medium text-slate-200">
+                        <td className="px-5 py-4 font-medium text-slate-200 break-words-safe min-w-[140px]">
                           {faculty?.name || <span className="text-slate-500 italic">Not Assigned</span>}
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-5 py-4 break-words-safe min-w-[180px]">
                           {faculty ? (
-                            <div className="flex flex-col text-xs space-y-1 text-slate-300">
-                              <span className="flex items-center gap-1.5">
-                                <Mail className="w-3 h-3 text-slate-400" />
-                                {faculty.email}
+                            <div className="flex flex-col text-xs space-y-1 text-slate-300 min-w-0">
+                              <span className="flex items-center gap-1.5 break-words-safe">
+                                <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="break-words-safe min-w-0">{faculty.email}</span>
                               </span>
                               {faculty.phone && (
                                 <span className="flex items-center gap-1.5">
-                                  <Phone className="w-3 h-3 text-slate-400" />
-                                  {faculty.phone}
+                                  <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                                  <span>{faculty.phone}</span>
                                 </span>
                               )}
                             </div>
@@ -300,12 +300,12 @@ export function EnrolledCoursesTable({ enrollments }: EnrolledCoursesTableProps)
                             <span className="text-slate-500 italic text-xs">N/A</span>
                           )}
                         </td>
-                        <td className="px-5 py-4 text-right">
+                        <td className="px-5 py-4 text-right whitespace-nowrap">
                           {faculty && (
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-xs h-8 rounded-lg cursor-pointer border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
+                              className="text-xs h-8 rounded-lg cursor-pointer border-slate-200 hover:border-indigo-300 hover:text-indigo-600 shrink-0"
                               onClick={() =>
                                 setSelectedFaculty({
                                   name: faculty.name,

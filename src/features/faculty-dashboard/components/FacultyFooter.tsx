@@ -15,7 +15,7 @@ export function FacultyFooter() {
         <div className="flex items-center gap-1.5 text-center text-slate-300 font-medium bg-slate-800/80 border border-slate-700/60 px-3.5 py-1 rounded-full">
           <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
           <span>
-            Created by <strong className="text-white font-semibold">Sanjay Ganesh</strong> &{' '}
+            Developed by <strong className="text-white font-semibold">Sanjay Ganesh</strong> &{' '}
             <strong className="text-white font-semibold">Tushar Sinha</strong> (3rd Year AIML) under the guidance of{' '}
             <strong className="text-indigo-400 font-semibold">Dr. Vinoth R</strong>
           </span>

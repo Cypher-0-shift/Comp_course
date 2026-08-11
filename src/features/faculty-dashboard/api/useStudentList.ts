@@ -14,7 +14,6 @@ export interface StudentListRow {
   subject_code: string
   subject_name: string
   department_name: string
-  enrolled_subjects?: Array<{ subject_code: string; subject_name: string; status?: string }>
   status: 'enrolled' | 'completed' | 'dropped'
 }
 
@@ -23,14 +22,15 @@ interface UseStudentListParams {
   search: string
   pagination?: Pick<PaginationState, 'page' | 'pageSize'>
   departmentName?: string | null
+  crossDept?: boolean
 }
 
-export function useStudentList({ filters, search, departmentName }: UseStudentListParams) {
+export function useStudentList({ filters, search, departmentName, crossDept }: UseStudentListParams) {
   const supabase = useSupabase()
   const { role, empId } = useAuth()
 
   return useQuery({
-    queryKey: ['faculty-student-list', filters, search, departmentName, role, empId],
+    queryKey: ['faculty-student-list', filters, search, departmentName, role, empId, crossDept],
     staleTime: 3 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     queryFn: async () => {
@@ -38,7 +38,7 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
         .from('student_enrollments')
         .select('*', { count: 'exact' })
 
-      if (role === 'faculty' && empId) {
+      if (!crossDept && role === 'faculty' && empId) {
         const { data: assignments, error: assignError } = await supabase
           .from('faculty_assignments')
           .select('subject_code')
@@ -68,7 +68,7 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
 
       const activeDept = filters.department || departmentName
       if (activeDept) {
-        query = query.eq('program', activeDept)
+        query = query.ilike('program', `%${activeDept}%`)
       }
 
       if (search.trim()) {
@@ -85,11 +85,15 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
 
       if (error) throw error
 
-      const groupedMap = new Map<string, StudentListRow>()
+      // Group / deduplicate by student (register_no or student_name)
+      const studentMap = new Map<string, StudentListRow>()
+
       ;(data ?? []).forEach((row) => {
-        const regNo = row.register_no?.trim() || row.id
-        if (!groupedMap.has(regNo)) {
-          groupedMap.set(regNo, {
+        const key = (row.register_no || row.student_name || '').trim().toLowerCase()
+        if (!key) return
+
+        if (!studentMap.has(key)) {
+          studentMap.set(key, {
             sno: 0,
             student_id: row.id,
             student_name: row.student_name,
@@ -97,34 +101,25 @@ export function useStudentList({ filters, search, departmentName }: UseStudentLi
             program: row.program,
             mobile: row.mobile_no,
             email: row.email_id,
-            subject_code: row.subject_code,
-            subject_name: row.subject_name,
+            subject_code: row.subject_code || '',
+            subject_name: row.subject_name || '',
             department_name: row.program,
-            enrolled_subjects: [
-              {
-                subject_code: row.subject_code,
-                subject_name: row.subject_name,
-                status: row.status,
-              },
-            ],
             status: (row.status as 'enrolled' | 'completed' | 'dropped') || 'enrolled',
           })
         } else {
-          const existing = groupedMap.get(regNo)!
-          const subExists = existing.enrolled_subjects?.some((s) => s.subject_code === row.subject_code)
-          if (!subExists) {
-            existing.enrolled_subjects?.push({
-              subject_code: row.subject_code,
-              subject_name: row.subject_name,
-              status: row.status,
-            })
-            existing.subject_code += `, ${row.subject_code}`
-            existing.subject_name += `, ${row.subject_name}`
+          const existing = studentMap.get(key)!
+          if (row.subject_code) {
+            existing.subject_code = existing.subject_code
+              ? `${existing.subject_code} | ${row.subject_code}`
+              : row.subject_code
+            existing.subject_name = existing.subject_name
+              ? `${existing.subject_name} | ${row.subject_name || '—'}`
+              : row.subject_name || '—'
           }
         }
       })
 
-      const rows = Array.from(groupedMap.values()).map((row, idx) => ({
+      const rows: StudentListRow[] = Array.from(studentMap.values()).map((row, idx) => ({
         ...row,
         sno: idx + 1,
       }))

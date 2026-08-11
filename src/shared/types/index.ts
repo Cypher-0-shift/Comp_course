@@ -50,6 +50,7 @@ export interface StudentWithRelations {
   program: string
   mobile: string
   email: string
+  section: string
   department_id: string
   academic_year_id: string
   created_at: string
@@ -76,6 +77,7 @@ export interface EnrollmentWithRelations {
     id: string
     code: string
     name: string
+    credits: number
     department_id: string
     academic_year_id: string
     created_at: string
@@ -145,4 +147,51 @@ export interface TableColumn<T> {
   render?: (value: unknown, row: T) => React.ReactNode
   sortable?: boolean
   filterable?: boolean
+}
+
+// Upload & Approval Workflow Types
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
+export type ApprovalEntityType = 'new_course' | 'new_student' | 'new_enrollment'
+
+export interface UploadBatch {
+  id: string
+  uploaded_by_faculty_id: string
+  file_name: string
+  file_type: 'xlsx' | 'csv'
+  row_count: number
+  status: 'processing' | 'awaiting_approval' | 'partially_applied' | 'completed' | 'failed'
+  created_at: string
+}
+
+export interface ApprovalRequest {
+  id: string
+  batch_id: string
+  entity_type: ApprovalEntityType
+  status: ApprovalStatus
+  // Snapshot of the parsed row(s), shown to the approver for review
+  payload: {
+    subject_code?: string
+    subject_name?: string
+    student_name?: string
+    register_no?: string
+    program?: string
+    mobile_no?: string
+    email_id?: string
+  }
+  raised_by_faculty_id: string
+  reviewed_by_user_id: string | null
+  reviewed_at: string | null
+  rejection_reason: string | null
+  created_at: string
+}
+
+export interface AppNotification {
+  id: string
+  recipient_role: 'faculty' | 'hod' | 'dean' | 'admin'
+  recipient_id: string
+  title: string
+  body: string
+  link: string
+  read: boolean
+  created_at: string
 }
