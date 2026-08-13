@@ -9,6 +9,8 @@
     "dev:staff": "cross-env VITE_APP_TYPE=staff vite --port 3001",
     "dev:all": "concurrently -n \"STUDENT,STAFF\" -c \"cyan.bold,magenta.bold\" \"npm run dev:student\" \"npm run dev:staff\"",
     "build": "vite build",
+    "build:student": "cross-env VITE_APP_TYPE=student vite build",
+    "build:staff": "cross-env VITE_APP_TYPE=staff vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"

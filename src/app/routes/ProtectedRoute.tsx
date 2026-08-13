@@ -29,6 +29,13 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const isAllowed = allowedRoles.includes(role)
 
   if (!isAllowed) {
+    const envAppType = import.meta.env.VITE_APP_TYPE
+    
+    // If running in dedicated portal mode (student vs staff), block cross-portal access cleanly
+    if (envAppType) {
+      return <Navigate to="/access-denied" state={{ from: location }} replace />
+    }
+
     // Deep link redirect: if user tries to access wrong dashboard, redirect to their correct one
     const currentPath = location.pathname
     const targetDashboard =
