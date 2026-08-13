@@ -105,31 +105,14 @@ export default defineConfig({
 
   define: {
     'process.env': {},
+    'import.meta.env.VITE_APP_TYPE': JSON.stringify(process.env.VITE_APP_TYPE || 'student'),
   },
 
   build: {
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            // Supabase — separate chunk (large, but needed immediately for auth)
-            if (id.includes('@supabase')) return 'vendor-supabase'
-            // React core — most critical, separate chunk
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react'
-            }
-            // TanStack Query — separate chunk
-            if (id.includes('@tanstack')) return 'vendor-query'
-            // Icons — lazy-load separately
-            if (id.includes('lucide-react')) return 'vendor-lucide'
-            // Charts — only used in admin/faculty, lazy load
-            if (id.includes('recharts') || id.includes('d3-')) return 'vendor-recharts'
-            // Radix UI primitives
-            if (id.includes('@radix-ui')) return 'vendor-radix'
-            // Let Vite auto-split everything else (avoids circular chunk dependency)
-          }
-        },
+        // Let Vite handle chunk splitting automatically
       },
     },
   },
