@@ -11,7 +11,7 @@ interface UploadDataModalProps {
 export function UploadDataModal({ isOpen, onClose }: UploadDataModalProps) {
   const [dragActive, setDragActive] = useState(false)
   const [file, setFile] = useState<File | null>(null)
-  const [previewData, setPreviewData] = useState<any[]>([])
+  const [previewData, setPreviewData] = useState<Record<string, unknown>[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -55,7 +55,7 @@ export function UploadDataModal({ isOpen, onClose }: UploadDataModalProps) {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        setPreviewData(results.data.slice(0, 5)) // Preview first 5 rows
+        setPreviewData(results.data.slice(0, 5) as Record<string, unknown>[]) // Preview first 5 rows
         setIsProcessing(false)
       },
       error: (error) => {
@@ -184,8 +184,8 @@ export function UploadDataModal({ isOpen, onClose }: UploadDataModalProps) {
                       <tbody className="divide-y divide-slate-100">
                         {previewData.map((row, i) => (
                           <tr key={i} className="hover:bg-slate-50/50">
-                            {Object.values(row).map((val: any, j) => (
-                              <td key={j} className="px-4 py-2.5 text-slate-700 break-words-safe">{val}</td>
+                            {Object.values(row).map((val: unknown, j) => (
+                              <td key={j} className="px-4 py-2.5 text-slate-700 break-words-safe">{val as React.ReactNode}</td>
                             ))}
                           </tr>
                         ))}

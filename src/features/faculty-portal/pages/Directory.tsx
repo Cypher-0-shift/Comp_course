@@ -14,8 +14,8 @@ export function Directory() {
   const studentQuery = useStudentList({ filters: {}, search: '', crossDept: true })
   const facultyQuery = useFacultyList({ filters: {}, search: '', crossDept: true })
 
-  const rawStudentRows = studentQuery.data?.rows || []
-  const rawFacultyRows = facultyQuery.data?.rows || []
+  const rawStudentRows = useMemo(() => studentQuery.data?.rows || [], [studentQuery.data?.rows])
+  const rawFacultyRows = useMemo(() => facultyQuery.data?.rows || [], [facultyQuery.data?.rows])
 
   const getCleanProgramTitle = (name: string): string => {
     if (!name) return ''
@@ -148,11 +148,11 @@ export function Directory() {
         </div>
 
         <Tabs.Content value="students" className="outline-none focus:outline-none animate-in fade-in duration-300">
-          <StudentEnrollmentTab rows={filteredStudentRows as any} isLoading={studentQuery.isLoading} />
+          <StudentEnrollmentTab rows={filteredStudentRows as unknown as React.ComponentProps<typeof StudentEnrollmentTab>['rows']} isLoading={studentQuery.isLoading} />
         </Tabs.Content>
 
         <Tabs.Content value="faculty" className="outline-none focus:outline-none animate-in fade-in duration-300">
-          <FacultyAssignmentsTab rows={filteredFacultyRows as any} isLoading={facultyQuery.isLoading} />
+          <FacultyAssignmentsTab rows={filteredFacultyRows as unknown as React.ComponentProps<typeof FacultyAssignmentsTab>['rows']} isLoading={facultyQuery.isLoading} />
         </Tabs.Content>
       </Tabs.Root>
     </div>

@@ -35,8 +35,10 @@ export function LoginForm() {
   const [searchParams] = useSearchParams()
   const { redirectToDashboard, isLoading: authLoading } = useAuth()
 
-  // Get query params
-  const redirectPath = searchParams.get('redirect') || null
+  const rawRedirect = searchParams.get('redirect') || null
+  // Validate: must be a relative internal path (starts with /, not //)
+  // Blocks: https://evil.com, //evil.com, javascript:alert(1)
+  const redirectPath = rawRedirect && /^\/(?!\/)/.test(rawRedirect) ? rawRedirect : null
 
   const envAppType = import.meta.env.VITE_APP_TYPE
 

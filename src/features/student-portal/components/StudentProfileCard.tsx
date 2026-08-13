@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StudentWithRelations } from '@/shared/types'
@@ -93,7 +94,6 @@ export function deriveDepartmentFromProgram(program?: string, existingDept?: str
 export function StudentProfileCard({
   student,
   registeredCount = 0,
-  completedCount: _completedCount = 0,
 }: StudentProfileCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const { degree, course } = parseDegreeAndCourse(student.program)

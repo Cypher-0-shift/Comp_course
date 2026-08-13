@@ -12,6 +12,8 @@ import {
   YAxis,
   Tooltip,
   LabelList,
+  TooltipProps,
+  PieLabelRenderProps,
 } from 'recharts'
 
 import { useFacultyProfile } from '../api/useFacultyProfile'
@@ -21,7 +23,7 @@ import { useFacultyCourses } from '../api/useFacultyCourses'
 const VIBGYOR_COLORS = ['#6366f1', '#06b6d4', '#f97316', '#10b981', '#ec4899', '#8b5cf6']
 
 // Custom pointer tooltip speech bubble targeting hovered slice or bar
-interface CustomTooltipProps {
+interface CustomTooltipProps extends TooltipProps<any, any> {
   active?: boolean
   payload?: readonly any[]
   totalStudents?: number
@@ -31,9 +33,10 @@ function CustomPointerTooltip({ active, payload, totalStudents = 142 }: CustomTo
   if (!active || !payload || !payload.length) return null
 
   const data = payload[0]
-  const color = data.color || data.payload?.fill || '#6366f1'
-  const name = data.payload?.name || data.payload?.course || data.name
-  const value = data.value || data.payload?.registered
+  const pData = data.payload as Record<string, unknown> | undefined
+  const color = data.color || (pData?.fill as string) || '#6366f1'
+  const name = (pData?.name as string) || (pData?.course as string) || String(data.name)
+  const value = Number(data.value) || Number(pData?.registered) || 0
   const percentage = ((value / totalStudents) * 100).toFixed(0)
 
   return (
@@ -100,14 +103,11 @@ function splitTextIntoLines(text: string, maxCharsPerLine = 25): string[] {
   return lines
 }
 
-// PowerPoint style Leader Line & Data Label renderer supporting full multiline text
 const renderPowerPointCustomLabel = (
-  props: any,
-  _activeDataId: string | null,
-  _onSetActive: (id: string | null) => void
+  props: PieLabelRenderProps
 ) => {
   const { cx = 150, cy = 150, midAngle = 0, outerRadius = 105, name = '', value = 0, percent = 0, index = 0, payload } = props
-  const itemId = payload?.id || payload?.name || name || `item-${index}`
+  const itemId = (payload as Record<string, string>)?.id || (payload as Record<string, string>)?.name || String(name) || `item-${index}`
 
   const color = VIBGYOR_COLORS[index % VIBGYOR_COLORS.length] || '#6366f1'
   const sin = Math.sin(-RADIAN * midAngle)
@@ -128,8 +128,8 @@ const renderPowerPointCustomLabel = (
 
   // 4. Text Anchor Position & Multiline line calculation
   const textX = ex + (isRightSide ? 6 : -6)
-  const percentText = `${(percent * 100).toFixed(0)}%`
-  const nameLines = splitTextIntoLines(name, 24)
+  const percentText = `${(Number(percent) * 100).toFixed(0)}%`
+  const nameLines = splitTextIntoLines(String(name), 24)
   const lineSpacing = 14
   const startY = ey - ((nameLines.length - 1) * lineSpacing) / 2 - 8
 
@@ -271,7 +271,7 @@ export function FacultyDashboard() {
                 outerRadius={105}
                 paddingAngle={5}
                 dataKey="value"
-                label={(props) => renderPowerPointCustomLabel(props, null, () => {})}
+                label={(props) => renderPowerPointCustomLabel(props)}
                 labelLine={false}
                 isAnimationActive={true}
               >

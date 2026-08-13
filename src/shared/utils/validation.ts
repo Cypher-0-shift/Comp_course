@@ -97,7 +97,6 @@ export async function validateFileContent(file: File): Promise<boolean> {
         .map(b => b.toString(16).padStart(2, '0'))
         .join('').toUpperCase();
       
-      if (header === '25504446') return resolve(true); // PDF
       if (header === '504B0304') return resolve(true); // DOCX, XLSX
 
       // For CSV, check if the first 100 bytes (or file size if smaller) are valid printable ASCII/UTF8 chars

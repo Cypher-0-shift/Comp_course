@@ -17,7 +17,7 @@ const FACULTY_COLS: ColumnDef<FacultyAssignmentRow>[] = [
     render: (v, r) => (
       <span className="inline-flex items-center gap-1 font-normal text-slate-700">
         <Building2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-        {(v as string) || (r as any).department || '—'}
+        {(v as string) || ((r as unknown as Record<string, unknown>).department as string) || '—'}
       </span>
     ),
   },

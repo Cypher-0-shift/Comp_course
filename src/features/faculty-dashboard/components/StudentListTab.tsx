@@ -129,7 +129,7 @@ export function StudentListTab() {
   }, [allRows])
 
   function handleFilterChange(key: keyof FilterOptions, value: string) {
-    setFilters((prev) => ({ ...prev, [key]: value || undefined }))
+    setFilters((prev: FilterOptions) => ({ ...prev, [key]: value || undefined }))
   }
 
   function handleResetFilters() {

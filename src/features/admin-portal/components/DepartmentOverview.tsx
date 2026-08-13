@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useDepartmentOverview } from '../api/useDepartmentOverview'
+import { DepartmentStats } from './DepartmentStats'
 import { useFacultyList } from '@/features/faculty-dashboard/api/useFacultyList'
 import {
   Building2,
@@ -25,6 +26,7 @@ import {
   YAxis,
   Tooltip,
   LabelList,
+  PieLabelRenderProps,
 } from 'recharts'
 
 // Vibrant VIBGYOR Color Palette for Charts
@@ -63,14 +65,12 @@ function splitTextIntoLines(text: string, maxCharsPerLine = 25): string[] {
 }
 
 const renderPowerPointCustomLabel = (
-  props: any,
-  _activeDataId: string | null,
-  _onSetActive: (id: string | null) => void,
+  props: PieLabelRenderProps,
   chartData: { id: string; name: string; value: number }[],
   unitLabel: string
 ) => {
   const { cx = 150, cy = 150, midAngle = 0, outerRadius = 105, name = '', value = 0, percent = 0, index = 0, payload } = props
-  const itemId = payload?.id || chartData[index % chartData.length]?.id || name
+  const itemId = (payload as Record<string, string>)?.id || chartData[Number(index) % chartData.length]?.id || String(name)
 
   const color = VIBGYOR_COLORS[index % VIBGYOR_COLORS.length] || '#6366f1'
   const sin = Math.sin(-RADIAN * midAngle)
@@ -90,8 +90,8 @@ const renderPowerPointCustomLabel = (
   const ey = my
 
   const textX = ex + (isRightSide ? 6 : -6)
-  const percentText = `${(percent * 100).toFixed(0)}%`
-  const nameLines = splitTextIntoLines(name, 24)
+  const percentText = `${(Number(percent) * 100).toFixed(0)}%`
+  const nameLines = splitTextIntoLines(String(name), 24)
   const lineSpacing = 14
   const startY = ey - ((nameLines.length - 1) * lineSpacing) / 2 - 8
 
@@ -135,7 +135,7 @@ const renderPowerPointCustomLabel = (
         fill={color}
         style={{ fontSize: '12px', fontWeight: 800 }}
       >
-        {value} {unitLabel} ({percentText})
+        {value as React.ReactNode} {unitLabel} ({percentText})
       </text>
     </g>
   )
@@ -314,7 +314,7 @@ export function DepartmentOverview() {
   const toggleUgDegrees = () => {
     const isAllUgChecked = UG_DEGREES.every((d) => selectedDegrees.includes(d))
     if (isAllUgChecked) {
-      setSelectedDegrees((prev) => prev.filter((d) => !UG_DEGREES.includes(d as any)))
+      setSelectedDegrees((prev) => prev.filter((d) => !UG_DEGREES.includes(d as typeof UG_DEGREES[number])))
     } else {
       setSelectedDegrees((prev) => Array.from(new Set([...prev, ...UG_DEGREES])))
     }
@@ -411,66 +411,18 @@ export function DepartmentOverview() {
 
   const unitLabel = viewPerspective === 'students' ? 'Students' : 'Faculty'
 
-  const metricCards = [
-    {
-      title: 'Total Departments',
-      value: String(totalDepartments),
-      icon: Building2,
-      iconColor: 'text-indigo-600',
-      bgColor: 'bg-[#6366f1]/10',
-    },
-    {
-      title: 'Total Courses',
-      value: String(totalCourses),
-      icon: BookOpen,
-      iconColor: 'text-cyan-600',
-      bgColor: 'bg-[#06b6d4]/10',
-    },
-    {
-      title: 'Total Faculty Assigned',
-      value: String(totalFacultyAssigned),
-      icon: GraduationCap,
-      iconColor: 'text-purple-600',
-      bgColor: 'bg-[#8b5cf6]/10',
-    },
-    {
-      title: 'Total Enrolled Students',
-      value: String(totalEnrolledStudents),
-      icon: Users,
-      iconColor: 'text-emerald-600',
-      bgColor: 'bg-[#10b981]/10',
-    },
-  ]
-
   const isFiltered = selectedDegrees.length !== ALL_DEGREES.length || selectedPrograms.length > 0
 
   return (
     <div className="space-y-6 md:space-y-8 relative pb-10">
 
       {/* ── 1. Top 4 Executive Metric Cards (Dynamically Recalculated) ────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {metricCards.map((card) => {
-          const Icon = card.icon
-          return (
-            <div
-              key={card.title}
-              className="lg-card lg-card-hover rounded-3xl p-4 sm:p-5 flex items-center justify-between gap-2 min-w-0"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] sm:text-[11px] xl:text-[12px] uppercase tracking-wider font-extrabold text-slate-500 mb-1 whitespace-normal leading-snug">
-                  {card.title}
-                </p>
-                <h4 className="text-2xl md:text-3xl font-extrabold text-[#001941] tracking-tight">
-                  {card.value}
-                </h4>
-              </div>
-              <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center shrink-0 ${card.bgColor} ${card.iconColor} border border-slate-200/50 shadow-xs`}>
-                <Icon className="w-5 h-5" />
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      <DepartmentStats
+        totalDepartments={totalDepartments}
+        totalCourses={totalCourses}
+        totalFacultyAssigned={totalFacultyAssigned}
+        totalEnrolledStudents={totalEnrolledStudents}
+      />
 
       {/* ── 2. View Options Control Bar (With Student / Faculty Switcher) ───── */}
       <div className="lg-card rounded-3xl p-5 md:p-6 flex flex-col gap-4 relative z-30 overflow-visible">
@@ -803,9 +755,9 @@ export function DepartmentOverview() {
                   paddingAngle={5}
                   dataKey="value"
                   activeShape={false}
-                  label={(props) => renderPowerPointCustomLabel(props, activePieId, setActivePieId, chart1Data, unitLabel)}
+                  label={(props) => renderPowerPointCustomLabel(props, chart1Data, unitLabel)}
                   labelLine={false}
-                  onMouseEnter={(data: any) => setActivePieId(data?.id || null)}
+                  onMouseEnter={(_, index) => setActivePieId(chart1Data[index]?.name || null)}
                   onMouseLeave={() => setActivePieId(null)}
                   isAnimationActive={true}
                 >

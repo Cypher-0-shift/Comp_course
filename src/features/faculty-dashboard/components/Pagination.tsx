@@ -11,7 +11,7 @@ interface PaginationProps {
 const PAGE_SIZES = [10, 20, 50, 100]
 
 export function Pagination({ state, onPageChange, onPageSizeChange }: PaginationProps) {
-  const { page, pageSize, total } = state
+  const { page, pageSize, total = 0 } = state
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const from = total === 0 ? 0 : page * pageSize + 1
   const to = Math.min((page + 1) * pageSize, total)

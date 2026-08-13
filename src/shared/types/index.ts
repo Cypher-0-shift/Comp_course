@@ -2,6 +2,16 @@
 
 export type UserRole = 'student' | 'faculty' | 'hod' | 'dean'
 
+export interface PaginationState {
+  page: number
+  pageSize: number
+  total?: number
+}
+
+export interface FilterOptions {
+  [key: string]: string | undefined
+}
+
 export interface Department {
   id: string
   sl_no: number
@@ -104,94 +114,4 @@ export interface EnrollmentWithRelations {
   }
 }
 
-// Auth-related types
-export interface AuthUser {
-  id: string
-  email: string
-  app_metadata: {
-    provider: string
-    providers: string[]
-    role: UserRole
-    department_id: string | null
-  }
-  user_metadata: Record<string, unknown>
-  created_at: string
-  updated_at: string
-}
-
-export interface Session {
-  access_token: string
-  refresh_token: string
-  expires_in: number
-  token_type: string
-  user: AuthUser
-}
-
-// UI/Component types
-export interface FilterOptions {
-  department?: string
-  program?: string
-  subject?: string
-  status?: string
-}
-
-export interface PaginationState {
-  page: number
-  pageSize: number
-  total: number
-}
-
-export interface TableColumn<T> {
-  key: keyof T | string
-  header: string
-  render?: (value: unknown, row: T) => React.ReactNode
-  sortable?: boolean
-  filterable?: boolean
-}
-
-// Upload & Approval Workflow Types
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected'
-export type ApprovalEntityType = 'new_course' | 'new_student' | 'new_enrollment'
-
-export interface UploadBatch {
-  id: string
-  uploaded_by_faculty_id: string
-  file_name: string
-  file_type: 'xlsx' | 'csv'
-  row_count: number
-  status: 'processing' | 'awaiting_approval' | 'partially_applied' | 'completed' | 'failed'
-  created_at: string
-}
-
-export interface ApprovalRequest {
-  id: string
-  batch_id: string
-  entity_type: ApprovalEntityType
-  status: ApprovalStatus
-  // Snapshot of the parsed row(s), shown to the approver for review
-  payload: {
-    subject_code?: string
-    subject_name?: string
-    student_name?: string
-    register_no?: string
-    program?: string
-    mobile_no?: string
-    email_id?: string
-  }
-  raised_by_faculty_id: string
-  reviewed_by_user_id: string | null
-  reviewed_at: string | null
-  rejection_reason: string | null
-  created_at: string
-}
-
-export interface AppNotification {
-  id: string
-  recipient_role: 'faculty' | 'hod' | 'dean' | 'admin'
-  recipient_id: string
-  title: string
-  body: string
-  link: string
-  read: boolean
-  created_at: string
-}
+// End of types

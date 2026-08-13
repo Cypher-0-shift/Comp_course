@@ -1,4 +1,36 @@
 import { StudentWithRelations, EnrollmentWithRelations } from '@/shared/types'
+
+// Local DB Row interfaces for Supabase queries
+interface StudentEnrollmentDbRow {
+  id: string
+  sno: number | null
+  student_name: string
+  register_no: string
+  program: string
+  mobile_no: string | null
+  email_id: string
+  subject_code: string
+  subject_name: string
+  status: string
+  created_at: string
+  updated_at: string
+  credits?: string | number | null
+}
+
+interface FacultyAssignmentDbRow {
+  id: string
+  sno: number | null
+  subject_code: string
+  subject_name: string
+  students_registered: number
+  faculty_name: string
+  department: string
+  emp_id: string
+  mobile_number: string | null
+  email_id: string | null
+  created_at: string
+  updated_at: string
+}
 import { supabase } from '@/shared/hooks/useSupabase'
 
 // ---------------------------------------------------------------------------
@@ -48,7 +80,7 @@ export async function getStudentProfile(): Promise<StudentWithRelations | null> 
 
   // Attempt to enrich from student_enrollments (first matching row)
   try {
-    let dbRow: Record<string, any> | null = null
+    let dbRow: StudentEnrollmentDbRow | null = null
 
     // Try by email first
     if (user.email) {
@@ -59,7 +91,7 @@ export async function getStudentProfile(): Promise<StudentWithRelations | null> 
         .limit(1)
         .maybeSingle()
 
-      if (byEmail) dbRow = byEmail as Record<string, any>
+      if (byEmail) dbRow = byEmail as StudentEnrollmentDbRow
     }
 
     // If no email match, try by register_no
@@ -71,7 +103,7 @@ export async function getStudentProfile(): Promise<StudentWithRelations | null> 
         .limit(1)
         .maybeSingle()
 
-      if (byReg) dbRow = byReg as Record<string, any>
+      if (byReg) dbRow = byReg as StudentEnrollmentDbRow
     }
 
     if (dbRow) {
@@ -110,7 +142,7 @@ export async function getStudentEnrollments(): Promise<EnrollmentWithRelations[]
   const meta = (user.user_metadata ?? {}) as Record<string, string>
   const registerNo = meta.register_no ?? meta.registration_number ?? ''
 
-  let rows: Record<string, any>[] = []
+  let rows: StudentEnrollmentDbRow[] = []
 
   // Query by email
   if (user.email) {
@@ -146,10 +178,10 @@ export async function getStudentEnrollments(): Promise<EnrollmentWithRelations[]
   }
 
   // Collect unique subject codes for faculty lookup
-  const subjectCodes = [...new Set(rows.map((r) => r.subject_code).filter(Boolean))]
+  const subjectCodes = [...new Set(rows.map((r) => r.subject_code).filter(Boolean))] as string[]
 
   // Fetch faculty assignments for these subject codes
-  const facultyMap = new Map<string, Record<string, any>>()
+  const facultyMap = new Map<string, FacultyAssignmentDbRow>()
   if (subjectCodes.length > 0) {
     const { data: facData, error: facError } = await supabase
       .from('faculty_assignments')

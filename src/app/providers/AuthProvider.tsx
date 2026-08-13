@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
@@ -345,14 +346,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const loadInitialSession = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession()
+        const { data: sessionData } = await supabase.auth.getSession()
+        // Verify the session server-side (validates JWT cryptographically)
+        const { data, error } = sessionData.session 
+          ? await supabase.auth.getUser() 
+          : { data: { user: null }, error: null }
+        
         if (error) {
           console.error('Error loading session:', error)
         }
-        if (mounted && data.session) {
-          setSession(data.session)
-          setUser(data.session.user)
-          registerSession(data.session.user.id, data.session.access_token)
+        if (mounted && data.user && sessionData.session) {
+          setSession(sessionData.session)
+          setUser(data.user)
+          registerSession(data.user.id, sessionData.session.access_token)
           startIdleTimer()
           startActivityTracking()
         }
@@ -370,7 +376,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [startActivityTracking, startIdleTimer, supabase.auth])
 
   // =============================================
   // Effect 2: Auth State Change Listener
@@ -413,7 +419,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       data.subscription.unsubscribe()
     }
-  }, [])
+  }, [handleSignOut, startActivityTracking, startIdleTimer, stopActivityTracking, stopIdleTimer, supabase.auth])
 
   // =============================================
   // Effect 3: Cross-tab Session Sync (Storage Events)
@@ -447,7 +453,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     window.addEventListener('storage', handleStorageChange)
     return () => window.removeEventListener('storage', handleStorageChange)
-  }, [user?.id, handleSignOut])
+  }, [user, user?.id, handleSignOut])
 
   // =============================================
   // Effect 4: Custom Event for Session Kicked (Same Tab)

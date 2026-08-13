@@ -123,7 +123,7 @@ export function ApprovalsQueue({ role }: { role: 'faculty' | 'admin' | 'hod' | '
   )
 }
 
-function ClipboardCheck(props: any) {
+function ClipboardCheck(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

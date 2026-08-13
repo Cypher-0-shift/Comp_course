@@ -15,8 +15,8 @@ export function DepartmentDetail() {
   const { deptMetaQuery, facultyQuery, studentsQuery } = useDepartmentDetail(departmentId ?? null)
 
   const deptMeta = deptMetaQuery.data
-  const rawFacultyRows = facultyQuery.data ?? []
-  const rawStudentRows = studentsQuery.data ?? []
+  const rawFacultyRows = useMemo(() => facultyQuery.data ?? [], [facultyQuery.data])
+  const rawStudentRows = useMemo(() => studentsQuery.data ?? [], [studentsQuery.data])
 
   // Extract unique subjects across student and faculty records for this department
   const uniqueSubjects = useMemo(() => {

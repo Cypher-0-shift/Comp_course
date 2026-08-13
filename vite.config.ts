@@ -127,8 +127,7 @@ export default defineConfig({
             if (id.includes('recharts') || id.includes('d3-')) return 'vendor-recharts'
             // Radix UI primitives
             if (id.includes('@radix-ui')) return 'vendor-radix'
-            // Everything else
-            return 'vendor-core'
+            // Let Vite auto-split everything else (avoids circular chunk dependency)
           }
         },
       },

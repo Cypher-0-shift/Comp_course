@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useSupabase } from '@/shared/hooks/useSupabase'
 import { validateStudentRow, validateFacultyRow, validateDepartmentRow } from '@/shared/utils/validation'
 import type { ImportType, ParsedRow, ImportResult } from '@/shared/utils/validation'
-import { SafeError, handleUIError } from '@/shared/utils/error-handler'
+import { SafeError } from '@/shared/utils/error-handler'
 
 export type { ImportType, ParsedRow, ImportResult }
 
@@ -64,97 +64,28 @@ export function useDataImport() {
       const validRows = preview.filter((r) => r.valid).map((r) => r.data)
       if (validRows.length === 0) throw new SafeError('No valid rows to import')
 
-      // Layer 2 Verification: Try RPC first
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data, error } = await (supabase.rpc as any)('import_data_with_verification', {
-          p_passcode: passcode,
-          p_import_type: importType,
-          p_rows: validRows,
-        })
+      // Server-side verification via Supabase RPC (passcode stored as Supabase secret, never in bundle)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.rpc as any)('import_data_with_verification', {
+        p_passcode: passcode,
+        p_import_type: importType,
+        p_rows: validRows,
+      })
 
-        if (!error && data) {
-          return data as ImportResult
-        }
-      } catch {
-        // Fallback to client-side passcode verification if RPC not executed in Supabase console
+      if (error) {
+        // Surface a safe error message; do not expose raw DB error details
+        throw new SafeError(
+          error.message?.includes('invalid passcode') || error.message?.includes('denied')
+            ? 'Invalid Security Verification Passcode. Data import denied.'
+            : 'Import failed. Please check your passcode and try again.'
+        )
       }
 
-      // Local Passcode Verification Fallback
-      const expectedPasscode = import.meta.env.VITE_ADMIN_PASSCODE;
-      if (!expectedPasscode) {
-        throw new SafeError('Server configuration error: VITE_ADMIN_PASSCODE is not set.');
-      }
-      if (passcode !== expectedPasscode) {
-        throw new SafeError('Invalid Security Verification Passcode. Data import denied.')
+      if (!data) {
+        throw new SafeError('No response from import function. Please contact the administrator.')
       }
 
-      const result: ImportResult = { inserted: 0, skipped: 0, errors: [] }
-
-      if (importType === 'departments') {
-        // Clear existing for complete data replacement
-        await supabase.from('departments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-
-        for (let i = 0; i < validRows.length; i++) {
-          const row = validRows[i]
-          const { error } = await supabase.from('departments').upsert({
-            sl_no: Number(row.sl_no || row.sno || i + 1),
-            department_name: row.department_name || row.name,
-            students_registered: Number(row.students_registered || 0),
-          }, { onConflict: 'department_name' })
-
-          if (error) { result.errors.push(`Row ${i + 1}: ${handleUIError(error, 'Data Import')}`); result.skipped++ }
-          else result.inserted++
-        }
-      }
-
-      if (importType === 'faculty') {
-        // Clear existing for complete data replacement
-        await supabase.from('faculty_assignments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-
-        for (let i = 0; i < validRows.length; i++) {
-          const row = validRows[i]
-          const { error } = await supabase.from('faculty_assignments').insert({
-            sno: Number(row.sno || i + 1),
-            subject_code: row.subject_code || row.code || '',
-            subject_name: row.subject_name || row.name || '',
-            students_registered: Number(row.students_registered || 0),
-            faculty_name: row.faculty_name || row.name || '',
-            department: row.department || row.department_name || '',
-            emp_id: row.emp_id || '',
-            mobile_number: row.mobile_number || row.mobile || '',
-            email_id: row.email_id || row.email || '',
-          })
-
-          if (error) { result.errors.push(`Row ${i + 1}: ${handleUIError(error, 'Data Import')}`); result.skipped++ }
-          else result.inserted++
-        }
-      }
-
-      if (importType === 'students') {
-        // Clear existing for complete data replacement
-        await supabase.from('student_enrollments').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-
-        for (let i = 0; i < validRows.length; i++) {
-          const row = validRows[i]
-          const { error } = await supabase.from('student_enrollments').insert({
-            sno: Number(row.sno || i + 1),
-            student_name: row.student_name || row.name || '',
-            register_no: row.register_no || '',
-            program: row.program || '',
-            mobile_no: row.mobile_no || row.mobile || '',
-            email_id: row.email_id || row.email || '',
-            subject_code: row.subject_code || '',
-            subject_name: row.subject_name || '',
-            status: row.status || 'enrolled',
-          })
-
-          if (error) { result.errors.push(`Row ${i + 1}: ${handleUIError(error, 'Data Import')}`); result.skipped++ }
-          else result.inserted++
-        }
-      }
-
-      return result
+      return data as ImportResult
     },
   })
 
