@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { UserRole } from '../../shared/types'
-import { getSupabaseClient, signOut as supabaseSignOut } from '../../shared/hooks/useSupabase'
+import { getSupabaseClient, signOut as supabaseSignOut, changePassword as supabaseChangePassword } from '../../shared/hooks/useSupabase'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 
@@ -27,6 +27,7 @@ export interface AuthContextType {
   empId: string | null
   isLoading: boolean
   signOut: () => Promise<void>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<{ data: unknown; error: Error | null }>
   redirectToDashboard: (role: UserRole) => void
 }
 
@@ -501,6 +502,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     empId,
     isLoading,
     signOut: handleSignOut,
+    changePassword: supabaseChangePassword,
     redirectToDashboard,
   }
 

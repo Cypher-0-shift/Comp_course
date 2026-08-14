@@ -117,6 +117,33 @@ export async function getUser() {
   return { data, error }
 }
 
+export async function changePassword(currentPassword: string, newPassword: string) {
+  const client = getSupabaseClient()
+
+  // 1. Get current logged in user
+  const { data: userData, error: userError } = await client.auth.getUser()
+  if (userError || !userData?.user?.email) {
+    return { data: null, error: userError || new Error('User not authenticated') }
+  }
+
+  // 2. Re-authenticate with current password to verify current password
+  const { error: signInError } = await client.auth.signInWithPassword({
+    email: userData.user.email,
+    password: currentPassword,
+  })
+
+  if (signInError) {
+    return { data: null, error: new Error('Current password is incorrect') }
+  }
+
+  // 3. Update password in Supabase Auth
+  const { data, error: updateError } = await client.auth.updateUser({
+    password: newPassword,
+  })
+
+  return { data, error: updateError }
+}
+
 export function onAuthStateChange(
   callback: (event: string, session: import('@supabase/supabase-js').Session | null) => void
 ) {

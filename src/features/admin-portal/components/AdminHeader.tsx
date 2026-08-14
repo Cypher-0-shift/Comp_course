@@ -1,5 +1,7 @@
-import { BookOpen, LogOut, Bell, ShieldCheck } from 'lucide-react'
+import { useState } from 'react'
+import { BookOpen, LogOut, Bell, ShieldCheck, KeyRound } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
+import { ChangePasswordModal } from '@/shared/components/ChangePasswordModal'
 
 interface AdminHeaderProps {
   sidebarOpen?: boolean
@@ -8,6 +10,7 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeaderProps) {
   const { user, role, departmentName, signOut } = useAuth()
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
 
   const userMetaDataName = (user?.user_metadata?.name as string) || (user?.app_metadata?.name as string)
   const emailPrefix = user?.email?.split('@')[0] ?? ''
@@ -79,6 +82,15 @@ export function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeaderProps) 
             <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#001941] ring-2 ring-white" />
           </button>
 
+          {/* Change Password */}
+          <button
+            onClick={() => setIsChangePasswordOpen(true)}
+            className="lg-btn-ghost relative flex items-center justify-center rounded-full text-slate-600 transition cursor-pointer h-9 w-9"
+            title="Change Password"
+          >
+            <KeyRound className="h-4 w-4" />
+          </button>
+
           {/* User Profile Pill — lg-pill-slate */}
           <div className="lg-pill-slate flex items-center gap-2.5 py-1.5 pl-2 pr-3">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#001941] to-[#0b2e63] text-xs font-bold text-white shadow-sm">
@@ -102,6 +114,11 @@ export function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeaderProps) 
           </button>
         </div>
       </div>
+
+      <ChangePasswordModal 
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </header>
   )
 }
