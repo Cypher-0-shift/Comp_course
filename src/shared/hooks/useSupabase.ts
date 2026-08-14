@@ -147,7 +147,15 @@ export async function changePassword(currentPassword: string, newPassword: strin
 export async function checkEmailExists(email: string): Promise<boolean> {
   const client = getSupabaseClient()
   
-  // 1. Check student enrollments
+  // 1. Try to use the RPC function first (this covers Admins in auth.users as well)
+  const { data: rpcData, error: rpcError } = await client.rpc('check_user_exists', { lookup_email: email })
+  
+  if (!rpcError && typeof rpcData === 'boolean') {
+    return rpcData
+  }
+
+  // Fallback if the RPC hasn't been created in Supabase yet
+  // 2. Check student enrollments
   const { data: student } = await client
     .from('student_enrollments')
     .select('email_id')
@@ -156,7 +164,7 @@ export async function checkEmailExists(email: string): Promise<boolean> {
     
   if (student) return true
 
-  // 2. Check faculty assignments
+  // 3. Check faculty assignments
   const { data: faculty } = await client
     .from('faculty_assignments')
     .select('email_id')
