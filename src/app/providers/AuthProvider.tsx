@@ -22,6 +22,7 @@ export interface AuthContextType {
   session: Session | null
   user: User | null
   role: UserRole | null
+  availableRoles: UserRole[]
   departmentId: string | null
   departmentName: string | null
   empId: string | null
@@ -29,6 +30,7 @@ export interface AuthContextType {
   signOut: () => Promise<void>
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ data: unknown; error: Error | null }>
   redirectToDashboard: (role: UserRole) => void
+  switchRole: (newRole: UserRole) => void
 }
 
 // Session tracking for concurrent session limit
@@ -159,18 +161,19 @@ function enforceMaxSessions(userId: string): boolean {
  */
 export function extractUserMetadata(user: User | null): {
   role: UserRole | null
+  availableRoles: UserRole[]
   departmentId: string | null
   departmentName: string | null
   empId: string | null
 } {
-  if (!user) return { role: null, departmentId: null, departmentName: null, empId: null }
+  if (!user) return { role: null, availableRoles: [], departmentId: null, departmentName: null, empId: null }
 
   const appMetadata = user.app_metadata as
-    | { role?: UserRole; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
+    | { role?: UserRole; roles?: UserRole[]; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
     | undefined
 
   const userMetadata = user.user_metadata as
-    | { role?: UserRole; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
+    | { role?: UserRole; roles?: UserRole[]; department_id?: string; department_name?: string; department?: string; emp_id?: string; empId?: string }
     | undefined
 
   const deptName =
@@ -192,8 +195,21 @@ export function extractUserMetadata(user: User | null): {
     userMetadata?.empId ??
     null
 
+  const primaryRole = appMetadata?.role ?? userMetadata?.role ?? null
+  let roles: UserRole[] = []
+  if (appMetadata?.roles && Array.isArray(appMetadata.roles)) {
+    roles = appMetadata.roles
+  } else if (userMetadata?.roles && Array.isArray(userMetadata.roles)) {
+    roles = userMetadata.roles
+  }
+  
+  if (roles.length === 0 && primaryRole) {
+    roles = [primaryRole]
+  }
+
   return {
-    role: appMetadata?.role ?? userMetadata?.role ?? null,
+    role: primaryRole,
+    availableRoles: roles,
     departmentId: deptId,
     departmentName: deptName,
     empId,
@@ -229,8 +245,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     sessionRef.current = session
   }, [session])
 
-  // Computed values
-  const { role, departmentId, departmentName, empId } = extractUserMetadata(user)
+  // Computed values from metadata
+  const { role: defaultRole, availableRoles, departmentId, departmentName, empId } = extractUserMetadata(user)
+
+  // Manage active role state, preferring localStorage if valid
+  const [activeRole, setActiveRole] = useState<UserRole | null>(null)
+
+  useEffect(() => {
+    if (user && availableRoles.length > 0) {
+      const storedRole = localStorage.getItem(`ccd_active_role_${user.id}`) as UserRole | null
+      if (storedRole && availableRoles.includes(storedRole)) {
+        setActiveRole(storedRole)
+      } else {
+        setActiveRole(defaultRole || availableRoles[0])
+      }
+    } else {
+      setActiveRole(null)
+    }
+  }, [user, availableRoles, defaultRole])
+
+  const switchRole = useCallback((newRole: UserRole) => {
+    if (user && availableRoles.includes(newRole)) {
+      setActiveRole(newRole)
+      localStorage.setItem(`ccd_active_role_${user.id}`, newRole)
+    }
+  }, [user, availableRoles])
 
   // =============================================
   // Activity Tracking (for idle timeout)
@@ -496,7 +535,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     session,
     user,
-    role,
+    role: activeRole,
+    availableRoles,
     departmentId,
     departmentName,
     empId,
@@ -504,6 +544,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signOut: handleSignOut,
     changePassword: supabaseChangePassword,
     redirectToDashboard,
+    switchRole,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -25,8 +25,20 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Check if user's role is allowed
-  const isAllowed = allowedRoles.includes(role)
+  // Check if user's currently active role is allowed
+  let isAllowed = allowedRoles.includes(role)
+
+  // If active role is not allowed, but they HAVE an allowed role in availableRoles,
+  // automatically switch their active role to the first matching allowed role.
+  const { availableRoles, switchRole } = useAuth()
+  if (!isAllowed && availableRoles) {
+    const matchingRole = availableRoles.find((r) => allowedRoles.includes(r))
+    if (matchingRole) {
+      // Switch their active role under the hood
+      switchRole(matchingRole)
+      isAllowed = true
+    }
+  }
 
   if (!isAllowed) {
     const envAppType = import.meta.env.VITE_APP_TYPE
@@ -38,14 +50,16 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
     // Deep link redirect: if user tries to access wrong dashboard, redirect to their correct one
     const currentPath = location.pathname
+    // Default to the first available role if role is somehow null
+    const fallbackRole = role || (availableRoles && availableRoles[0]) || 'student'
     const targetDashboard =
-      role === 'student' ? '/student' : role === 'faculty' ? '/faculty' : '/admin'
+      fallbackRole === 'student' ? '/student' : fallbackRole === 'faculty' ? '/faculty' : '/admin'
 
     if (currentPath.startsWith('/student') || currentPath.startsWith('/faculty') || currentPath.startsWith('/admin')) {
       return (
         <Navigate
           to={targetDashboard}
-          state={{ redirected: true, fromRole: role }}
+          state={{ redirected: true, fromRole: fallbackRole }}
           replace
         />
       )

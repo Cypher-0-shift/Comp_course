@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { BookOpen, LogOut, Bell, ShieldCheck, KeyRound } from 'lucide-react'
+import { BookOpen, LogOut, Bell, ShieldCheck, KeyRound, Users } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/shared/hooks/useAuth'
 import { ChangePasswordModal } from '@/shared/components/ChangePasswordModal'
 
@@ -9,7 +10,8 @@ interface AdminHeaderProps {
 }
 
 export function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeaderProps) {
-  const { user, role, departmentName, signOut } = useAuth()
+  const { user, role, departmentName, signOut, availableRoles, switchRole } = useAuth()
+  const navigate = useNavigate()
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
 
   const userMetaDataName = (user?.user_metadata?.name as string) || (user?.app_metadata?.name as string)
@@ -73,6 +75,21 @@ export function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeaderProps) 
 
         {/* Right Side: Actions */}
         <div className="flex items-center gap-3 sm:gap-4">
+          {/* Switch Role Button */}
+          {availableRoles && availableRoles.includes('faculty') && (
+            <button
+              onClick={() => {
+                switchRole('faculty')
+                navigate('/faculty/dashboard', { replace: true })
+              }}
+              className="lg-btn-ghost flex h-9 items-center justify-center gap-2 rounded-xl text-slate-600 px-3 transition cursor-pointer"
+              title="Switch to Faculty View"
+            >
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs font-semibold">Faculty View</span>
+            </button>
+          )}
+
           {/* Notification bell */}
           <button
             className="lg-btn-ghost relative flex items-center justify-center rounded-full text-slate-600 transition cursor-pointer h-9 w-9"
