@@ -45,6 +45,7 @@ export function LoginForm() {
   // State
   const [staffTab, setStaffTab] = useState<'faculty' | 'admin'>('faculty')
   const [isSignUp, setIsSignUp] = useState(false)
+  const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [empId, setEmpId] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [email, setEmail] = useState('')
@@ -222,7 +223,7 @@ export function LoginForm() {
     }
   }
 
-  const handleForgotPassword = async (e: React.MouseEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!email) {
@@ -243,6 +244,7 @@ export function LoginForm() {
         toast.success('Password reset link sent!', {
           description: `Check your inbox at ${formattedEmail} for the reset link.`,
         })
+        setIsForgotPassword(false)
       }
     } catch (err: unknown) {
       handleUIError(err, 'Password Reset')
@@ -273,7 +275,75 @@ export function LoginForm() {
       <div className="app-background" />
 
       <div className="w-full max-w-md flex flex-col items-center justify-center relative z-10 my-auto">
-        {envAppType === 'student' ? (
+        {isForgotPassword ? (
+          /* Forgot Password Card */
+          <div className="w-full rounded-3xl border border-white/90 bg-white/90 backdrop-blur-2xl shadow-2xl overflow-hidden">
+            <div className="p-6 md:p-8">
+              <div className="text-center mb-5">
+                <div className="flex justify-center mb-3">
+                  <img src="/8.-SRM-Logo-300x300.webp" alt="SRM Logo" className="h-14 w-14 md:h-16 md:w-16 object-contain drop-shadow-md" />
+                </div>
+                <h1 className="text-xl md:text-2xl font-extrabold text-[#001941] tracking-tight">
+                  Reset Password
+                </h1>
+                <p className="text-xs text-slate-700 font-bold mt-1">Enter your email to receive a reset link</p>
+              </div>
+
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-1">
+                  <Label htmlFor="reset-email" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      value={email}
+                      onChange={handleEmailChange}
+                      placeholder="you@college.edu"
+                      className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-10 md:h-11 text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.email && 'border-red-500 focus-visible:ring-red-500')}
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="text-[10px] text-red-600 font-bold" role="alert">
+                      {errors.email}
+                    </p>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full lg-btn-primary rounded-xl h-11 font-bold transition-all mt-1 cursor-pointer shadow-md hover:shadow-lg text-sm"
+                  disabled={isSubmitting || !email}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending Link...
+                    </>
+                  ) : (
+                    'Send Reset Link'
+                  )}
+                </Button>
+
+                <div className="flex items-center justify-center pt-2">
+                  <a
+                    href="#"
+                    className="text-xs text-slate-600 underline hover:text-[#001941] font-bold"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setIsForgotPassword(false)
+                      setErrors({})
+                    }}
+                  >
+                    ← Back to login
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : envAppType === 'student' ? (
           /* Simplified Student Login Glass Card */
           <div className="w-full rounded-3xl border border-white/90 bg-white/90 backdrop-blur-2xl shadow-2xl overflow-hidden">
             <div className="p-6 md:p-8">
@@ -582,7 +652,11 @@ export function LoginForm() {
                       <a
                         href="#"
                         className="text-xs text-slate-600 underline hover:text-[#001941] font-bold"
-                        onClick={handleForgotPassword}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          setIsForgotPassword(true)
+                          setErrors({})
+                        }}
                       >
                         Forgot password?
                       </a>
