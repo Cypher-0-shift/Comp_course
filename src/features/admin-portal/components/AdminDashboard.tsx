@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate, NavLink } from 'react-router-dom'
+import { Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Users,
@@ -18,11 +18,11 @@ import { useAuth } from '@/shared/hooks/useAuth'
 import { DepartmentOverview } from './DepartmentOverview'
 import { DepartmentDetail } from './DepartmentDetail'
 import { DataImportPage } from './DataImportPage'
-import { StudentEnrollmentTab } from './StudentEnrollmentTab'
-import { FacultyDirectoryTab } from './FacultyDirectoryTab'
+import { Directory } from '@/features/faculty-portal/pages/Directory'
 
 export function AdminDashboard() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, availableRoles, switchRole } = useAuth()
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -69,8 +69,7 @@ export function AdminDashboard() {
 
   const navItems = [
     { to: '/admin',          label: 'Overview',     icon: LayoutDashboard, end: true },
-    { to: '/admin/students', label: 'Students',     icon: Users,           end: false },
-    { to: '/admin/faculty',  label: 'Faculty',      icon: Briefcase,       end: false },
+    { to: '/admin/directory',label: 'Directory',    icon: Users,           end: false },
     { to: '/admin/import',   label: 'Data Import',  icon: Upload,          end: false },
   ]
 
@@ -105,8 +104,23 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* Right: user menu dropdown */}
-        <div id="user-menu-container" className="relative">
+        {/* Right: Actions */}
+        <div className="flex items-center gap-3">
+          {availableRoles && availableRoles.includes('faculty') && (
+            <button
+              onClick={() => {
+                switchRole('faculty')
+                navigate('/faculty/dashboard', { replace: true })
+              }}
+              className="lg-btn-ghost flex h-9 items-center justify-center gap-2 rounded-xl text-slate-600 px-3 transition cursor-pointer"
+              title="Switch to Faculty View"
+            >
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs font-semibold">Faculty View</span>
+            </button>
+          )}
+
+          <div id="user-menu-container" className="relative">
           <button
             id="user-menu-button"
             onClick={() => setUserMenuOpen((v) => !v)}
@@ -156,6 +170,7 @@ export function AdminDashboard() {
               </div>
             </>
           )}
+        </div>
         </div>
       </header>
 
@@ -328,31 +343,7 @@ export function AdminDashboard() {
                 </section>
               } />
 
-              {/* Student Directory */}
-              <Route path="students" element={
-                <section className="lg-card p-6 space-y-4">
-                  <div className="border-b border-slate-200/70 pb-4">
-                    <h1 className="text-xl font-bold text-[#001941]">Student Directory</h1>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Enrolled students across university departments
-                    </p>
-                  </div>
-                  <StudentEnrollmentTab />
-                </section>
-              } />
-
-              {/* Faculty Directory */}
-              <Route path="faculty" element={
-                <section className="lg-card p-6 space-y-4">
-                  <div className="border-b border-slate-200/70 pb-4">
-                    <h1 className="text-xl font-bold text-[#001941]">Faculty Directory</h1>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Assigned faculty across university departments
-                    </p>
-                  </div>
-                  <FacultyDirectoryTab />
-                </section>
-              } />
+              <Route path="directory" element={<Directory />} />
 
               <Route path="departments/:id" element={<DepartmentDetail />} />
               <Route path="import" element={<DataImportPage />} />

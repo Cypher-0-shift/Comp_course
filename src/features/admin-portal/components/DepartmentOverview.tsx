@@ -868,10 +868,9 @@ export function DepartmentOverview() {
         </div>
 
         {/* Right: Program Breakdown List with Progress Indicators */}
-        <div className="lg-card rounded-3xl p-5 md:p-6 flex flex-col justify-between max-h-[440px] overflow-y-auto">
-          <div>
-            <div className="flex items-center justify-between mb-4 sticky top-0 bg-transparent pb-2 z-10">
-              <div>
+        <div className="lg-card rounded-3xl p-5 md:p-6 flex flex-col max-h-[440px]">
+          <div className="flex items-center justify-between mb-4 pb-2">
+            <div>
                 <h3 className="font-bold text-[#001941] text-base md:text-lg flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-purple-600" />
                   Program Breakdown ({viewPerspective === 'students' ? 'Student Data' : 'Faculty Data'})
@@ -880,9 +879,9 @@ export function DepartmentOverview() {
                   {viewPerspective === 'students' ? 'Enrolled student counts & share' : 'Faculty allocation counts & share'}
                 </p>
               </div>
-            </div>
+          </div>
 
-            <div className="space-y-3 pt-1">
+          <div className="space-y-3 pt-1 overflow-y-auto flex-1 pr-2 custom-scrollbar">
               {filteredPrograms.length === 0 ? (
                 <div className="text-xs text-slate-400 italic py-6 text-center">
                   No programs checked.
@@ -923,7 +922,6 @@ export function DepartmentOverview() {
                 })
               )}
             </div>
-          </div>
         </div>
       </div>
     </div>

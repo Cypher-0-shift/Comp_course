@@ -82,8 +82,24 @@ export function FacultyLayout() {
           </span>
         </div>
 
-        {/* Right: user menu dropdown */}
-        <div id="user-menu-container" className="relative">
+        {/* Right: Actions */}
+        <div className="flex items-center gap-3">
+          {availableRoles && (availableRoles.includes('hod') || availableRoles.includes('dean')) && (
+            <button
+              onClick={() => {
+                const targetRole = availableRoles.includes('dean') ? 'dean' : 'hod'
+                switchRole(targetRole)
+                navigate('/admin/dashboard', { replace: true })
+              }}
+              className="lg-btn-ghost flex h-9 items-center justify-center gap-2 rounded-xl text-slate-600 px-3 transition cursor-pointer"
+              title="Switch to Admin View"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs font-semibold">Admin View</span>
+            </button>
+          )}
+
+          <div id="user-menu-container" className="relative">
           <button
             id="user-menu-button"
             onClick={() => setUserMenuOpen((v) => !v)}
@@ -120,20 +136,6 @@ export function FacultyLayout() {
                 </div>
 
                 <div className="py-1 mb-1 border-b border-slate-100">
-                  {availableRoles && (availableRoles.includes('hod') || availableRoles.includes('dean')) && (
-                    <button
-                      onClick={() => {
-                        setUserMenuOpen(false)
-                        const targetRole = availableRoles.includes('dean') ? 'dean' : 'hod'
-                        switchRole(targetRole)
-                        navigate('/admin/dashboard', { replace: true })
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-[#001941] transition-colors cursor-pointer"
-                    >
-                      <ShieldCheck className="w-4 h-4 shrink-0 text-indigo-500" />
-                      <span>Switch to Admin View</span>
-                    </button>
-                  )}
 
                   <button
                     onClick={() => {
@@ -161,6 +163,7 @@ export function FacultyLayout() {
               </div>
             </>
           )}
+        </div>
         </div>
       </header>
 
