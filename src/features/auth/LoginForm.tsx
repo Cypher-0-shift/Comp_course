@@ -292,15 +292,15 @@ export function LoginForm() {
                 <div className="flex justify-center mb-3">
                   <img src="/8.-SRM-Logo-300x300.webp" alt="SRM Logo" className="h-14 w-14 md:h-16 md:w-16 object-contain drop-shadow-md" />
                 </div>
-                <h1 className="text-xl md:text-2xl font-extrabold text-[#001941] tracking-tight">
+                <h1 className="text-xl md:text-2xl font-semibold text-[#001941] tracking-tight">
                   Reset Password
                 </h1>
-                <p className="text-xs text-slate-700 font-bold mt-1">Enter your email to receive a reset link</p>
+                <p className="text-xs text-slate-700 font-medium mt-1">Enter your email to receive a reset link</p>
               </div>
 
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-1">
-                  <Label htmlFor="reset-email" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Email</Label>
+                  <Label htmlFor="reset-email" className="text-[10px] md:text-xs font-semibold text-slate-900 uppercase tracking-wider">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                     <Input
@@ -309,13 +309,13 @@ export function LoginForm() {
                       value={email}
                       onChange={handleEmailChange}
                       placeholder="you@college.edu"
-                      className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-10 md:h-11 text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.email && 'border-red-500 focus-visible:ring-red-500')}
+                      className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-10 md:h-11 text-xs md:text-sm text-slate-900 font-medium placeholder:text-slate-400 shadow-xs transition-all', errors.email && 'border-red-500 focus-visible:ring-red-500')}
                       disabled={isSubmitting}
                       required
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-[10px] text-red-600 font-bold" role="alert">
+                    <p className="text-[10px] text-red-600 font-medium" role="alert">
                       {errors.email}
                     </p>
                   )}
@@ -323,7 +323,7 @@ export function LoginForm() {
 
                 <Button
                   type="submit"
-                  className="w-full lg-btn-primary rounded-xl h-11 font-bold transition-all mt-1 cursor-pointer shadow-md hover:shadow-lg text-sm"
+                  className="w-full lg-btn-primary rounded-xl h-11 font-medium transition-all mt-1 cursor-pointer shadow-md hover:shadow-lg text-sm"
                   disabled={isSubmitting || !email}
                 >
                   {isSubmitting ? (
@@ -339,7 +339,7 @@ export function LoginForm() {
                 <div className="flex items-center justify-center pt-2">
                   <a
                     href="#"
-                    className="text-xs text-slate-600 underline hover:text-[#001941] font-bold"
+                    className="text-xs text-slate-600 underline hover:text-[#001941] font-medium"
                     onClick={(e) => {
                       e.preventDefault()
                       setIsForgotPassword(false)
@@ -360,15 +360,15 @@ export function LoginForm() {
                 <div className="flex justify-center mb-3">
                   <img src="/8.-SRM-Logo-300x300.webp" alt="SRM Logo" className="h-14 w-14 md:h-16 md:w-16 object-contain drop-shadow-md" />
                 </div>
-                <h1 className="text-xl md:text-2xl font-extrabold text-[#001941] tracking-tight">
+                <h1 className="text-xl md:text-2xl font-semibold text-[#001941] tracking-tight">
                   Student Portal Login
                 </h1>
-                <p className="text-xs text-slate-700 font-bold mt-1">SRMIST Compensatory Course Dashboard</p>
+                <p className="text-xs text-slate-700 font-medium mt-1">SRMIST Compensatory Course Dashboard</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1">
-                  <Label htmlFor="email" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Email or Student ID</Label>
+                  <Label htmlFor="email" className="text-xs font-semibold text-slate-900 uppercase tracking-wider">Email or Student ID</Label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
                     <Input
@@ -380,17 +380,17 @@ export function LoginForm() {
                         setErrors((prev) => ({ ...prev, email: undefined }))
                       }}
                       placeholder="ID or university email"
-                      className={cn('pl-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-11 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all text-sm', errors.email && 'border-red-500 focus-visible:ring-red-500')}
+                      className={cn('pl-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-11 text-slate-900 font-medium placeholder:text-slate-400 shadow-xs transition-all text-sm', errors.email && 'border-red-500 focus-visible:ring-red-500')}
                       disabled={isSubmitting || authLoading}
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-xs text-red-600 font-bold">{errors.email}</p>
+                    <p className="text-xs text-red-600 font-medium">{errors.email}</p>
                   )}
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="password" className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Password</Label>
+                  <Label htmlFor="password" className="text-xs font-semibold text-slate-900 uppercase tracking-wider">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 h-4 w-4" />
                     <Input
@@ -399,7 +399,7 @@ export function LoginForm() {
                       value={password}
                       onChange={handlePasswordChange}
                       placeholder="••••••••"
-                      className={cn('pl-10 pr-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-11 text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all text-sm', errors.password && 'border-red-500 focus-visible:ring-red-500')}
+                      className={cn('pl-10 pr-10 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-11 text-slate-900 font-medium placeholder:text-slate-400 shadow-xs transition-all text-sm', errors.password && 'border-red-500 focus-visible:ring-red-500')}
                       disabled={isSubmitting || authLoading}
                     />
                     <button
@@ -412,15 +412,15 @@ export function LoginForm() {
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="text-xs text-red-600 font-bold">{errors.password}</p>
+                    <p className="text-xs text-red-600 font-medium">{errors.password}</p>
                   )}
                 </div>
 
                 {showResend && (
                   <Alert variant="destructive" className="flex gap-2 bg-red-50 border-2 border-red-200 py-2">
-                    <AlertDescription className="flex-1 text-xs break-words-safe text-red-900 font-bold">
+                    <AlertDescription className="flex-1 text-xs break-words-safe text-red-900 font-medium">
                       Email not confirmed.{' '}
-                      <button type="button" onClick={handleResendConfirmation} className="underline font-extrabold">
+                      <button type="button" onClick={handleResendConfirmation} className="underline font-semibold">
                         Resend
                       </button>
                     </AlertDescription>
@@ -429,7 +429,7 @@ export function LoginForm() {
 
                 <Button
                   type="submit"
-                  className="w-full lg-btn-primary rounded-xl h-11 font-bold transition-all mt-1 cursor-pointer shadow-md hover:shadow-lg text-sm"
+                  className="w-full lg-btn-primary rounded-xl h-11 font-medium transition-all mt-1 cursor-pointer shadow-md hover:shadow-lg text-sm"
                   disabled={isSubmitting || authLoading}
                 >
                   {isSubmitting ? (
@@ -457,14 +457,14 @@ export function LoginForm() {
                     className={cn('object-contain drop-shadow-md transition-all', isSignUp ? 'h-10 w-10 md:h-12 md:w-12' : 'h-14 w-14 md:h-16 md:w-16')}
                   />
                 </div>
-                <h1 className={cn('font-extrabold text-[#001941] tracking-tight transition-all', isSignUp ? 'text-lg md:text-xl' : 'text-xl md:text-2xl')}>
+                <h1 className={cn('font-semibold text-[#001941] tracking-tight transition-all', isSignUp ? 'text-lg md:text-xl' : 'text-xl md:text-2xl')}>
                   {isSignUp
                     ? 'Create Faculty Account'
                     : staffTab === 'faculty'
                     ? 'Faculty Portal Login'
                     : 'Admin Portal Login'}
                 </h1>
-                <p className="text-[11px] md:text-xs text-slate-700 font-bold mt-0.5">
+                <p className="text-[11px] md:text-xs text-slate-700 font-medium mt-0.5">
                   SRMIST Compensatory Course Dashboard
                 </p>
               </div>
@@ -481,7 +481,7 @@ export function LoginForm() {
                         setErrors({})
                       }}
                       className={cn(
-                        'flex-1 py-2 text-xs md:text-sm font-extrabold text-center rounded-xl transition-all cursor-pointer',
+                        'flex-1 py-2 text-xs md:text-sm font-semibold text-center rounded-xl transition-all cursor-pointer',
                         staffTab === 'faculty'
                           ? 'bg-[#001941] text-white shadow-md'
                           : 'text-slate-800 hover:text-slate-950 hover:bg-white/60'
@@ -497,7 +497,7 @@ export function LoginForm() {
                         setErrors({})
                       }}
                       className={cn(
-                        'flex-1 py-2 text-xs md:text-sm font-extrabold text-center rounded-xl transition-all cursor-pointer',
+                        'flex-1 py-2 text-xs md:text-sm font-semibold text-center rounded-xl transition-all cursor-pointer',
                         staffTab === 'admin'
                           ? 'bg-[#001941] text-white shadow-md'
                           : 'text-slate-800 hover:text-slate-950 hover:bg-white/60'
@@ -512,7 +512,7 @@ export function LoginForm() {
                   {/* Employee ID Field (Only for Faculty Sign Up) */}
                   {isSignUp && staffTab === 'faculty' && (
                     <div className="space-y-1">
-                      <Label htmlFor="empId" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Employee ID</Label>
+                      <Label htmlFor="empId" className="text-[10px] md:text-xs font-semibold text-slate-900 uppercase tracking-wider">Employee ID</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                         <Input
@@ -524,12 +524,12 @@ export function LoginForm() {
                             setErrors((prev) => ({ ...prev, empId: undefined }))
                           }}
                           placeholder="Employee ID"
-                          className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-9 md:h-10 text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.empId && 'border-red-500 focus-visible:ring-red-500')}
+                          className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-9 md:h-10 text-xs md:text-sm text-slate-900 font-medium placeholder:text-slate-400 shadow-xs transition-all', errors.empId && 'border-red-500 focus-visible:ring-red-500')}
                           disabled={isSubmitting || authLoading}
                         />
                       </div>
                       {errors.empId && (
-                        <p className="text-[10px] text-red-600 font-bold" role="alert">
+                        <p className="text-[10px] text-red-600 font-medium" role="alert">
                           {errors.empId}
                         </p>
                       )}
@@ -538,7 +538,7 @@ export function LoginForm() {
 
                   {/* Email Field */}
                   <div className="space-y-1">
-                    <Label htmlFor="email" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Email</Label>
+                    <Label htmlFor="email" className="text-[10px] md:text-xs font-semibold text-slate-900 uppercase tracking-wider">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                       <Input
@@ -547,7 +547,7 @@ export function LoginForm() {
                         value={email}
                         onChange={handleEmailChange}
                         placeholder="you@college.edu"
-                        className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', isSignUp ? 'h-9 md:h-10' : 'h-10 md:h-11', errors.email && 'border-red-500 focus-visible:ring-red-500')}
+                        className={cn('pl-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl text-xs md:text-sm text-slate-900 font-medium placeholder:text-slate-400 shadow-xs transition-all', isSignUp ? 'h-9 md:h-10' : 'h-10 md:h-11', errors.email && 'border-red-500 focus-visible:ring-red-500')}
                         disabled={isSubmitting || authLoading}
                         autoComplete="email"
                         aria-invalid={errors.email ? 'true' : 'false'}
@@ -555,7 +555,7 @@ export function LoginForm() {
                       />
                     </div>
                     {errors.email && (
-                      <p id="email-error" className="text-[10px] text-red-600 font-bold" role="alert">
+                      <p id="email-error" className="text-[10px] text-red-600 font-medium" role="alert">
                         {errors.email}
                       </p>
                     )}
@@ -563,7 +563,7 @@ export function LoginForm() {
 
                   {/* Password Field */}
                   <div className="space-y-1">
-                    <Label htmlFor="password" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Password</Label>
+                    <Label htmlFor="password" className="text-[10px] md:text-xs font-semibold text-slate-900 uppercase tracking-wider">Password</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                       <Input
@@ -572,7 +572,7 @@ export function LoginForm() {
                         value={password}
                         onChange={handlePasswordChange}
                         placeholder="••••••••"
-                        className={cn('pl-9 pr-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', isSignUp ? 'h-9 md:h-10' : 'h-10 md:h-11', errors.password && 'border-red-500 focus-visible:ring-red-500')}
+                        className={cn('pl-9 pr-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl text-xs md:text-sm text-slate-900 font-medium placeholder:text-slate-400 shadow-xs transition-all', isSignUp ? 'h-9 md:h-10' : 'h-10 md:h-11', errors.password && 'border-red-500 focus-visible:ring-red-500')}
                         disabled={isSubmitting || authLoading}
                         autoComplete="current-password"
                         aria-invalid={errors.password ? 'true' : 'false'}
@@ -589,7 +589,7 @@ export function LoginForm() {
                       </button>
                     </div>
                     {errors.password && (
-                      <p id="password-error" className="text-[10px] text-red-600 font-bold" role="alert">
+                      <p id="password-error" className="text-[10px] text-red-600 font-medium" role="alert">
                         {errors.password}
                       </p>
                     )}
@@ -598,7 +598,7 @@ export function LoginForm() {
                   {/* Confirm Password Field (Only for Faculty Sign Up) */}
                   {isSignUp && staffTab === 'faculty' && (
                     <div className="space-y-1">
-                      <Label htmlFor="confirmPassword" className="text-[10px] md:text-xs font-extrabold text-slate-900 uppercase tracking-wider">Confirm Password</Label>
+                      <Label htmlFor="confirmPassword" className="text-[10px] md:text-xs font-semibold text-slate-900 uppercase tracking-wider">Confirm Password</Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 h-3.5 w-3.5" />
                         <Input
@@ -610,12 +610,12 @@ export function LoginForm() {
                             setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
                           }}
                           placeholder="••••••••"
-                          className={cn('pl-9 pr-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-9 md:h-10 text-xs md:text-sm text-slate-900 font-bold placeholder:text-slate-400 shadow-xs transition-all', errors.confirmPassword && 'border-red-500 focus-visible:ring-red-500')}
+                          className={cn('pl-9 pr-9 bg-white border-2 border-slate-300/90 focus:border-[#001941] focus-visible:ring-4 focus-visible:ring-[#001941]/15 rounded-xl h-9 md:h-10 text-xs md:text-sm text-slate-900 font-medium placeholder:text-slate-400 shadow-xs transition-all', errors.confirmPassword && 'border-red-500 focus-visible:ring-red-500')}
                           disabled={isSubmitting || authLoading}
                         />
                       </div>
                       {errors.confirmPassword && (
-                        <p className="text-[10px] text-red-600 font-bold" role="alert">
+                        <p className="text-[10px] text-red-600 font-medium" role="alert">
                           {errors.confirmPassword}
                         </p>
                       )}
@@ -625,12 +625,12 @@ export function LoginForm() {
                   {/* Email Not Confirmed Alert */}
                   {showResend && (
                     <Alert variant="destructive" className="flex gap-2 bg-red-50 border-2 border-red-200 py-1.5 px-3">
-                      <AlertDescription className="flex-1 text-xs text-red-900 font-bold">
+                      <AlertDescription className="flex-1 text-xs text-red-900 font-medium">
                         Email not confirmed.{' '}
                         <button
                           type="button"
                           onClick={handleResendConfirmation}
-                          className="underline hover:no-underline text-xs font-extrabold"
+                          className="underline hover:no-underline text-xs font-semibold"
                         >
                           Resend email
                         </button>
@@ -641,7 +641,7 @@ export function LoginForm() {
                   {/* Submit Button */}
                   <Button
                     type="submit"
-                    className={cn('w-full lg-btn-primary rounded-xl font-bold text-xs md:text-sm transition-all cursor-pointer shadow-md hover:shadow-lg mt-1', isSignUp ? 'h-10' : 'h-11')}
+                    className={cn('w-full lg-btn-primary rounded-xl font-medium text-xs md:text-sm transition-all cursor-pointer shadow-md hover:shadow-lg mt-1', isSignUp ? 'h-10' : 'h-11')}
                     disabled={isSubmitting || authLoading}
                     size="default"
                   >
@@ -660,7 +660,7 @@ export function LoginForm() {
                     {!isSignUp && (
                       <a
                         href="#"
-                        className="text-xs text-slate-600 underline hover:text-[#001941] font-bold"
+                        className="text-xs text-slate-600 underline hover:text-[#001941] font-medium"
                         onClick={(e) => {
                           e.preventDefault()
                           setIsForgotPassword(true)
@@ -675,7 +675,7 @@ export function LoginForm() {
                         {!isSignUp && <span className="text-slate-300">|</span>}
                         <a
                           href="#"
-                          className="text-xs text-[#001941] hover:underline font-extrabold"
+                          className="text-xs text-[#001941] hover:underline font-semibold"
                           onClick={(e) => {
                             e.preventDefault()
                             setIsSignUp(!isSignUp)
