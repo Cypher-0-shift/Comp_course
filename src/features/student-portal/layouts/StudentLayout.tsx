@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, LogOut, Sparkles, Menu, X, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LayoutDashboard, BookOpen, LogOut, Sparkles, Menu, X, ChevronDown, PanelLeftClose, PanelLeftOpen, KeyRound } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
+import { ChangePasswordModal } from '@/shared/components/ChangePasswordModal'
 
 export function StudentLayout() {
   const { user, signOut } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
 
   // Close user profile dropdown when clicking anywhere outside or pressing Escape
   useEffect(() => {
@@ -113,6 +115,19 @@ export function StudentLayout() {
                     <p className="font-bold text-sm text-srm-primary truncate leading-snug">{displayName}</p>
                     <p className="text-[11px] text-srm-on-surface-muted truncate">{user?.email || 'Student'}</p>
                   </div>
+                </div>
+
+                <div className="py-1 mb-1 border-b border-slate-100">
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      setIsChangePasswordOpen(true)
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-[#001941] transition-colors cursor-pointer"
+                  >
+                    <KeyRound className="w-4 h-4 shrink-0 text-slate-400" />
+                    <span>Change Password</span>
+                  </button>
                 </div>
 
                 <button
@@ -327,6 +342,12 @@ export function StudentLayout() {
           <span>Logout</span>
         </button>
       </nav>
+
+      {/* Modals */}
+      <ChangePasswordModal 
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </div>
   )
 }
