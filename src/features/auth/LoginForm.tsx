@@ -441,6 +441,20 @@ export function LoginForm() {
                     'Login'
                   )}
                 </Button>
+
+                <div className="flex items-center justify-center pt-2">
+                  <a
+                    href="#"
+                    className="text-xs text-slate-600 underline hover:text-[#001941] font-medium"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setIsForgotPassword(true)
+                      setErrors({})
+                    }}
+                  >
+                    Forgot password?
+                  </a>
+                </div>
               </form>
             </div>
           </div>
