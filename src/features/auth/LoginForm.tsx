@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../../shared/hooks/useAuth'
-import { signIn, resendConfirmation, signUp, resetPassword } from '../../shared/hooks/useSupabase'
+import { signIn, resendConfirmation, signUp, resetPassword, checkEmailExists } from '../../shared/hooks/useSupabase'
 import { toast } from 'sonner'
 import { cn } from '../../shared/utils/cn'
 import { handleUIError } from '@/shared/utils/error-handler'
@@ -236,6 +236,15 @@ export function LoginForm() {
     try {
       setIsSubmitting(true)
       const formattedEmail = email.includes('@') ? email.trim() : `${email.trim()}@srmist.edu.in`
+      
+      const emailExists = await checkEmailExists(formattedEmail)
+      if (!emailExists) {
+        toast.error('No accounts found associated with that email', {
+          description: 'Please check the email address and try again.',
+        })
+        return
+      }
+
       const { error } = await resetPassword(formattedEmail)
       
       if (error) {

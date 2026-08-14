@@ -144,6 +144,30 @@ export async function changePassword(currentPassword: string, newPassword: strin
   return { data, error: updateError }
 }
 
+export async function checkEmailExists(email: string): Promise<boolean> {
+  const client = getSupabaseClient()
+  
+  // 1. Check student enrollments
+  const { data: student } = await client
+    .from('student_enrollments')
+    .select('email_id')
+    .eq('email_id', email)
+    .maybeSingle()
+    
+  if (student) return true
+
+  // 2. Check faculty assignments
+  const { data: faculty } = await client
+    .from('faculty_assignments')
+    .select('email_id')
+    .eq('email_id', email)
+    .maybeSingle()
+    
+  if (faculty) return true
+  
+  return false
+}
+
 export async function resetPassword(email: string) {
   const client = getSupabaseClient()
   const redirectUrl = import.meta.env.VITE_SITE_URL 
