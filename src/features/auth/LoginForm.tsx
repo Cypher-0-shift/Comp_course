@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../../shared/hooks/useAuth'
-import { signIn, resendConfirmation, signUp } from '../../shared/hooks/useSupabase'
+import { signIn, resendConfirmation, signUp, resetPassword } from '../../shared/hooks/useSupabase'
 import { toast } from 'sonner'
 import { cn } from '../../shared/utils/cn'
 import { handleUIError } from '@/shared/utils/error-handler'
@@ -202,18 +202,52 @@ export function LoginForm() {
 
 
   const handleResendConfirmation = async () => {
-    if (!resendEmail) return
-
     try {
-      const { error } = await resendConfirmation(resendEmail)
+      setIsSubmitting(true)
+      const formattedEmail = email.includes('@') ? email.trim() : `${email.trim()}@srmist.edu.in`
+      const { error } = await resendConfirmation(formattedEmail)
+      
       if (error) {
-        toast.error('Failed to resend confirmation email')
+        handleUIError(error, 'Resend Confirmation')
       } else {
-        toast.success('Confirmation email sent!')
+        toast.success('Confirmation email sent!', {
+          description: `Check your inbox at ${formattedEmail}`,
+        })
         setShowResend(false)
       }
-    } catch {
-      toast.error('Failed to resend confirmation email')
+    } catch (err: unknown) {
+      handleUIError(err, 'Resend Confirmation')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    if (!email) {
+      toast.error('Please enter your email address first', {
+        description: 'We need your email to send the reset link.',
+      })
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      const formattedEmail = email.includes('@') ? email.trim() : `${email.trim()}@srmist.edu.in`
+      const { error } = await resetPassword(formattedEmail)
+      
+      if (error) {
+        handleUIError(error, 'Password Reset')
+      } else {
+        toast.success('Password reset link sent!', {
+          description: `Check your inbox at ${formattedEmail} for the reset link.`,
+        })
+      }
+    } catch (err: unknown) {
+      handleUIError(err, 'Password Reset')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -548,10 +582,7 @@ export function LoginForm() {
                       <a
                         href="#"
                         className="text-xs text-slate-600 underline hover:text-[#001941] font-bold"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          toast.info('Contact your administrator for password reset')
-                        }}
+                        onClick={handleForgotPassword}
                       >
                         Forgot password?
                       </a>

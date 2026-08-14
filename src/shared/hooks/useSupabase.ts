@@ -144,6 +144,19 @@ export async function changePassword(currentPassword: string, newPassword: strin
   return { data, error: updateError }
 }
 
+export async function resetPassword(email: string) {
+  const client = getSupabaseClient()
+  const redirectUrl = import.meta.env.VITE_SITE_URL 
+    ? `${import.meta.env.VITE_SITE_URL}/auth/callback`
+    : `${window.location.origin}/auth/callback`
+
+  const { data, error } = await client.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectUrl,
+  })
+  
+  return { data, error }
+}
+
 export function onAuthStateChange(
   callback: (event: string, session: import('@supabase/supabase-js').Session | null) => void
 ) {
