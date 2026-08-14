@@ -804,13 +804,13 @@ export function DepartmentOverview() {
             </div>
           </div>
 
-          <div className="h-[340px] w-full pt-2">
+          <div className="h-[340px] w-full pt-2 min-w-0">
             {barChartData.length === 0 ? (
               <div className="flex h-full items-center justify-center text-xs text-slate-400 italic">
                 No items selected.
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="99%" height="100%">
                 <BarChart data={barChartData} margin={{ top: 25, right: 20, left: -10, bottom: 20 }}>
                   <XAxis dataKey="dept" tick={{ fontSize: 11, fill: '#1e293b', fontWeight: 700 }} />
                   <YAxis

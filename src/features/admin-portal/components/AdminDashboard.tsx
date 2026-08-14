@@ -12,6 +12,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Briefcase,
+  BookOpen,
 } from 'lucide-react'
 import { useAuth } from '@/shared/hooks/useAuth'
 
@@ -19,6 +20,7 @@ import { DepartmentOverview } from './DepartmentOverview'
 import { DepartmentDetail } from './DepartmentDetail'
 import { DataImportPage } from './DataImportPage'
 import { Directory } from '@/features/faculty-portal/pages/Directory'
+import { MyCourses } from '@/features/faculty-portal/pages/MyCourses'
 
 export function AdminDashboard() {
   const { user, signOut, availableRoles, switchRole } = useAuth()
@@ -69,6 +71,7 @@ export function AdminDashboard() {
 
   const navItems = [
     { to: '/admin',          label: 'Overview',     icon: LayoutDashboard, end: true },
+    { to: '/admin/courses',  label: 'My Courses',   icon: BookOpen,        end: false },
     { to: '/admin/directory',label: 'Directory',    icon: Users,           end: false },
     { to: '/admin/import',   label: 'Data Import',  icon: Upload,          end: false },
   ]
@@ -326,7 +329,7 @@ export function AdminDashboard() {
             />
           </div>
 
-          <div className="flex-1 px-6 py-8 md:px-8 md:py-10 max-w-[1500px] mx-auto w-full relative z-10">
+          <div className="flex-1 px-6 py-8 md:px-8 md:py-10 max-w-7xl mx-auto w-full relative z-10">
             <Routes>
               {/* Department Overview */}
               <Route index element={
@@ -344,6 +347,7 @@ export function AdminDashboard() {
               } />
 
               <Route path="directory" element={<Directory />} />
+              <Route path="courses" element={<MyCourses />} />
 
               <Route path="departments/:id" element={<DepartmentDetail />} />
               <Route path="import" element={<DataImportPage />} />
@@ -353,7 +357,7 @@ export function AdminDashboard() {
 
           {/* Footer */}
           <footer className="lg-footer py-4 mt-auto">
-            <div className="max-w-[1500px] mx-auto px-6 md:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <div className="max-w-7xl mx-auto px-6 md:px-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-600">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#001941] shrink-0" />
                 <span>
